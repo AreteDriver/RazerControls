@@ -1,0 +1,22 @@
+[Unit]
+Description=Razer Control Center Remap Daemon
+Documentation=https://github.com/arete/razer-control-center
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/razer-remap-daemon
+Restart=on-failure
+RestartSec=5
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.config/razer-control-center
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,68 @@
+{
+  "id": "default",
+  "name": "Default Profile",
+  "description": "Example profile demonstrating button remapping",
+  "input_devices": [
+    "usb-Razer_Razer_Basilisk_V2-event-mouse"
+  ],
+  "layers": [
+    {
+      "id": "base",
+      "name": "Base Layer",
+      "bindings": [
+        {
+          "input_code": "BTN_SIDE",
+          "action_type": "macro",
+          "output_keys": [],
+          "macro_id": "copy_paste"
+        },
+        {
+          "input_code": "BTN_EXTRA",
+          "action_type": "key",
+          "output_keys": ["F13"],
+          "macro_id": null
+        }
+      ],
+      "hold_modifier_input_code": null
+    },
+    {
+      "id": "gaming",
+      "name": "Gaming Layer",
+      "bindings": [
+        {
+          "input_code": "BTN_SIDE",
+          "action_type": "key",
+          "output_keys": ["KEY_1"],
+          "macro_id": null
+        },
+        {
+          "input_code": "BTN_EXTRA",
+          "action_type": "key",
+          "output_keys": ["KEY_2"],
+          "macro_id": null
+        }
+      ],
+      "hold_modifier_input_code": "BTN_MIDDLE"
+    }
+  ],
+  "macros": [
+    {
+      "id": "copy_paste",
+      "name": "Copy & Paste",
+      "steps": [
+        {"type": "key_down", "key": "CTRL", "delay_ms": null, "text": null},
+        {"type": "key_press", "key": "C", "delay_ms": null, "text": null},
+        {"type": "key_up", "key": "CTRL", "delay_ms": null, "text": null},
+        {"type": "delay", "key": null, "delay_ms": 100, "text": null},
+        {"type": "key_down", "key": "CTRL", "delay_ms": null, "text": null},
+        {"type": "key_press", "key": "V", "delay_ms": null, "text": null},
+        {"type": "key_up", "key": "CTRL", "delay_ms": null, "text": null}
+      ],
+      "repeat_count": 1,
+      "repeat_delay_ms": 0
+    }
+  ],
+  "devices": [],
+  "match_process_names": [],
+  "is_default": true
+}

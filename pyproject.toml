@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "razer-control-center"
+version = "0.1.0"
+description = "Razer device control center for Linux - button remapping, macros, RGB, and profiles"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Arete"}
+]
+keywords = ["razer", "gaming", "mouse", "keyboard", "linux", "openrazer"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Desktop Environment",
+    "Topic :: Games/Entertainment",
+]
+
+dependencies = [
+    "evdev>=1.6.0",
+    "pydbus>=0.6.0",
+    "PySide6>=6.5.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[project.scripts]
+razer-control-center = "apps.gui.main:main"
+razer-remap-daemon = "services.remap_daemon.main:main"
+
+[project.urls]
+Homepage = "https://github.com/arete/razer-control-center"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apps*", "services*", "crates*", "tools*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
