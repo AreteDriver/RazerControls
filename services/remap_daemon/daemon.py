@@ -157,6 +157,10 @@ class RemapDaemon:
         """Clean up resources."""
         print("Cleaning up...")
 
+        # Release any held keys first (prevent stuck keys)
+        if self.engine:
+            self.engine.release_all_keys()
+
         # Ungrab devices
         for stable_id, dev in self.grabbed_devices.items():
             try:

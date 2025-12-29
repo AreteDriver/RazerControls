@@ -33,6 +33,93 @@ COMMON_INPUTS = {
     ],
 }
 
+# Common hold modifier keys for Hypershift
+HOLD_MODIFIER_OPTIONS = [
+    ("", "(None - Base Layer)"),
+    ("BTN_MIDDLE", "Middle Click"),
+    ("BTN_SIDE", "Side Button (Back)"),
+    ("BTN_EXTRA", "Extra Button (Forward)"),
+    ("KEY_CAPSLOCK", "Caps Lock"),
+    ("KEY_F13", "F13"),
+    ("KEY_F14", "F14"),
+    ("KEY_F15", "F15"),
+]
+
+
+class LayerDialog(QDialog):
+    """Dialog for editing layer properties including hold modifier."""
+
+    def __init__(self, layer: Layer | None = None, is_base: bool = False, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Layer" if layer else "New Layer")
+        self.setMinimumWidth(350)
+        self.is_base = is_base
+
+        layout = QFormLayout(self)
+
+        # Layer name
+        self.name_edit = QLineEdit()
+        if layer:
+            self.name_edit.setText(layer.name)
+        layout.addRow("Name:", self.name_edit)
+
+        # Hold modifier (Hypershift key)
+        self.modifier_combo = QComboBox()
+        self.modifier_combo.setEditable(True)
+        for code, name in HOLD_MODIFIER_OPTIONS:
+            self.modifier_combo.addItem(name, code)
+
+        if is_base:
+            self.modifier_combo.setEnabled(False)
+            self.modifier_combo.setToolTip("Base layer cannot have a hold modifier")
+        else:
+            self.modifier_combo.setToolTip(
+                "Hold this key to activate this layer (like Razer Hypershift)"
+            )
+
+        if layer and layer.hold_modifier_input_code:
+            idx = self.modifier_combo.findData(layer.hold_modifier_input_code)
+            if idx >= 0:
+                self.modifier_combo.setCurrentIndex(idx)
+            else:
+                self.modifier_combo.setEditText(layer.hold_modifier_input_code)
+
+        layout.addRow("Hold Modifier:", self.modifier_combo)
+
+        # Help text
+        help_label = QLabel(
+            "The hold modifier is the key you hold to activate this layer.\n"
+            "While held, bindings from this layer are used instead of base."
+        )
+        help_label.setStyleSheet("color: #888888; font-size: 11px;")
+        help_label.setWordWrap(True)
+        layout.addRow(help_label)
+
+        # Buttons
+        self.buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addRow(self.buttons)
+
+    def get_layer_data(self) -> tuple[str, str | None]:
+        """Get layer name and hold modifier code."""
+        name = self.name_edit.text().strip() or "Unnamed Layer"
+        modifier = self.modifier_combo.currentData()
+        if not modifier:
+            # Check if user typed a custom value
+            text = self.modifier_combo.currentText()
+            if text and text != "(None - Base Layer)":
+                # Try to extract code from "Name (CODE)" format
+                if "(" in text and ")" in text:
+                    modifier = text.split("(")[-1].rstrip(")")
+                else:
+                    modifier = text
+            else:
+                modifier = None
+        return name, modifier
+
 
 class BindingDialog(QDialog):
     """Dialog for editing a single binding."""
@@ -310,11 +397,26 @@ class BindingEditorWidget(QWidget):
         self.layer_combo.currentIndexChanged.connect(self._on_layer_changed)
         layer_layout.addWidget(self.layer_combo, 1)
 
-        self.add_layer_btn = QPushButton("Add Layer")
+        self.edit_layer_btn = QPushButton("Edit")
+        self.edit_layer_btn.clicked.connect(self._edit_layer)
+        self.edit_layer_btn.setToolTip("Edit layer name and hold modifier (Hypershift)")
+        layer_layout.addWidget(self.edit_layer_btn)
+
+        self.add_layer_btn = QPushButton("+ Layer")
         self.add_layer_btn.clicked.connect(self._add_layer)
+        self.add_layer_btn.setToolTip("Add a new layer with Hypershift support")
         layer_layout.addWidget(self.add_layer_btn)
 
+        self.del_layer_btn = QPushButton("Delete")
+        self.del_layer_btn.clicked.connect(self._delete_layer)
+        layer_layout.addWidget(self.del_layer_btn)
+
         layout.addLayout(layer_layout)
+
+        # Layer info label
+        self.layer_info_label = QLabel("")
+        self.layer_info_label.setStyleSheet("color: #44d72c; font-size: 11px; padding: 2px;")
+        layout.addWidget(self.layer_info_label)
 
         # Bindings list
         self.bindings_list = QListWidget()
@@ -415,6 +517,27 @@ class BindingEditorWidget(QWidget):
     def _on_layer_changed(self):
         """Handle layer selection change."""
         self._refresh_bindings()
+        self._update_layer_info()
+
+    def _update_layer_info(self):
+        """Update the layer info label."""
+        layer = self._get_current_layer()
+        if not layer:
+            self.layer_info_label.setText("")
+            self.del_layer_btn.setEnabled(False)
+            return
+
+        # Can't delete base layer
+        is_base = layer.id == "base"
+        self.del_layer_btn.setEnabled(not is_base)
+
+        if layer.hold_modifier_input_code:
+            mod_name = evdev_code_to_schema(layer.hold_modifier_input_code)
+            self.layer_info_label.setText(f"Hypershift: Hold {mod_name} to activate")
+        elif is_base:
+            self.layer_info_label.setText("Base layer (always active when no modifier held)")
+        else:
+            self.layer_info_label.setText("No hold modifier set - edit layer to add one")
 
     def _refresh_bindings(self):
         """Refresh the bindings list."""
@@ -460,21 +583,69 @@ class BindingEditorWidget(QWidget):
             return f"{input_name} -> (disabled)"
 
     def _add_layer(self):
-        """Add a new layer."""
+        """Add a new layer with Hypershift support."""
         if not self.current_profile:
             return
 
-        # Simple layer naming
-        layer_num = len(self.current_profile.layers) + 1
-        layer = Layer(
-            id=f"layer_{layer_num}",
-            name=f"Layer {layer_num}",
-            bindings=[],
+        dialog = LayerDialog(parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            name, modifier = dialog.get_layer_data()
+
+            # Generate unique ID
+            layer_num = len(self.current_profile.layers) + 1
+            layer_id = f"layer_{layer_num}"
+
+            layer = Layer(
+                id=layer_id,
+                name=name,
+                bindings=[],
+                hold_modifier_input_code=modifier,
+            )
+            self.current_profile.layers.append(layer)
+            self.layer_combo.addItem(layer.name, layer.id)
+            self.layer_combo.setCurrentIndex(self.layer_combo.count() - 1)
+            self.bindings_changed.emit()
+
+    def _edit_layer(self):
+        """Edit the current layer's properties."""
+        layer = self._get_current_layer()
+        if not layer:
+            return
+
+        is_base = layer.id == "base"
+        dialog = LayerDialog(layer=layer, is_base=is_base, parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            name, modifier = dialog.get_layer_data()
+            layer.name = name
+            if not is_base:
+                layer.hold_modifier_input_code = modifier
+
+            # Update combo box text
+            idx = self.layer_combo.currentIndex()
+            self.layer_combo.setItemText(idx, name)
+
+            self._update_layer_info()
+            self.bindings_changed.emit()
+
+    def _delete_layer(self):
+        """Delete the current layer."""
+        layer = self._get_current_layer()
+        if not layer or layer.id == "base":
+            return
+
+        # Confirm deletion
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self, "Delete Layer",
+            f"Delete layer '{layer.name}' and all its bindings?",
+            QMessageBox.Yes | QMessageBox.No
         )
-        self.current_profile.layers.append(layer)
-        self.layer_combo.addItem(layer.name, layer.id)
-        self.layer_combo.setCurrentIndex(self.layer_combo.count() - 1)
-        self.bindings_changed.emit()
+
+        if reply == QMessageBox.Yes:
+            self.current_profile.layers.remove(layer)
+            idx = self.layer_combo.currentIndex()
+            self.layer_combo.removeItem(idx)
+            self.bindings_changed.emit()
 
     def _add_binding(self):
         """Add a new binding."""
