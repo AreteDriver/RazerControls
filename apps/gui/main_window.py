@@ -24,6 +24,7 @@ from crates.profile_schema import Profile, ProfileLoader
 from services.openrazer_bridge import OpenRazerBridge
 
 from .widgets.app_matcher import AppMatcherWidget
+from .widgets.battery_monitor import BatteryMonitorWidget
 from .widgets.binding_editor import BindingEditorWidget
 from .widgets.device_list import DeviceListWidget
 from .widgets.macro_editor import MacroEditorWidget
@@ -101,6 +102,11 @@ class MainWindow(QMainWindow):
         # Razer tab (OpenRazer controls)
         self.razer_tab = RazerControlsWidget(self.openrazer)
         self.tabs.addTab(self.razer_tab, "Lighting & DPI")
+
+        # Battery tab
+        self.battery_monitor = BatteryMonitorWidget(self.openrazer)
+        self.battery_monitor.low_battery_warning.connect(self._on_low_battery)
+        self.tabs.addTab(self.battery_monitor, "Battery")
 
         # Daemon tab
         self.daemon_tab = QWidget()
@@ -303,10 +309,19 @@ class MainWindow(QMainWindow):
             self.profile_loader.save_profile(self.current_profile)
             self.statusbar.showMessage("App patterns saved")
 
+    def _on_low_battery(self, device_name: str, level: int):
+        """Handle low battery warning."""
+        QMessageBox.warning(
+            self,
+            "Low Battery",
+            f"{device_name} battery is low ({level}%).\n\nPlease charge your device.",
+        )
+
     def _refresh_devices(self):
         """Refresh device list."""
         self.device_list.refresh()
         self.razer_tab.refresh_devices()
+        self.battery_monitor.refresh_devices()
         self.statusbar.showMessage("Devices refreshed")
 
     def _refresh_device_status(self):
