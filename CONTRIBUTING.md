@@ -68,7 +68,7 @@ If you find a bug or have a suggestion:
 ## Testing
 
 - Write tests for new functionality
-- Ensure all existing tests pass (252+ tests)
+- Ensure all existing tests pass (290+ tests)
 - Test coverage target: 80%+
 - Run tests with: `pytest -v`
 

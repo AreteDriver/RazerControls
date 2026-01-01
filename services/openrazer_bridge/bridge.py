@@ -444,7 +444,7 @@ class OpenRazerBridge:
 
         try:
             dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
-            rate = dev.getPollRate()
+            rate: int = dev.getPollRate()
             device.poll_rate = rate
             return rate
         except Exception as e:
@@ -474,7 +474,7 @@ class OpenRazerBridge:
 
         try:
             dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
-            brightness = dev.getBrightness()
+            brightness: int = dev.getBrightness()
             device.brightness = brightness
             return brightness
         except Exception as e:

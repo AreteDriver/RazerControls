@@ -495,7 +495,8 @@ def _format_step(step: MacroStep) -> str:
     elif step.type == MacroStepType.DELAY:
         return f"⏱ {step.delay_ms}ms"
     elif step.type == MacroStepType.TEXT:
-        text = step.text[:30] + "..." if len(step.text or "") > 30 else step.text
+        text_val = step.text or ""
+        text = text_val[:30] + "..." if len(text_val) > 30 else text_val
         return f'📝 "{text}"'
     return str(step)
 

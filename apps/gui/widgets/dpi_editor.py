@@ -296,7 +296,7 @@ class DPIStageEditor(QWidget):
         stages = [item.get_dpi() for item in self._stage_items]
         return DPIConfig(stages=stages, active_stage=self._active_stage)
 
-    def _create_stage_item(self, dpi: int) -> DPIStageItem:
+    def _create_stage_item(self, dpi: int) -> DPIStageItem | None:
         """Create a new stage item."""
         if not self.current_device:
             return None

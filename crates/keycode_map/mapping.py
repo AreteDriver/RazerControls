@@ -376,16 +376,16 @@ def schema_to_evdev_code(schema_name: str) -> int | None:
     evdev_name = SCHEMA_TO_EVDEV.get(schema_name, schema_name)
     code = getattr(ecodes, evdev_name, None)
     if code is not None:
-        return code
+        return int(code)
 
     # Try with KEY_ prefix
     code = getattr(ecodes, f"KEY_{schema_name}", None)
     if code is not None:
-        return code
+        return int(code)
 
     # Try with BTN_ prefix
     code = getattr(ecodes, f"BTN_{schema_name}", None)
-    return code
+    return int(code) if code is not None else None
 
 
 def schema_to_evdev_name(schema_name: str) -> str | None:
@@ -483,7 +483,7 @@ def evdev_event_to_schema(event_type: int, event_code: int) -> str | None:
         if code_name:
             if isinstance(code_name, list):
                 code_name = code_name[0]
-            return evdev_code_to_schema(code_name)
+            return evdev_code_to_schema(str(code_name))
     return None
 
 

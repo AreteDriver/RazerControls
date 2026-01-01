@@ -57,7 +57,7 @@ class AddPatternDialog(QDialog):
 
     def get_pattern(self) -> str:
         """Get the entered pattern."""
-        return self.pattern_edit.text().strip()
+        return str(self.pattern_edit.text()).strip()
 
 
 class AppMatcherWidget(QWidget):

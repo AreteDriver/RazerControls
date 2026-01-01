@@ -132,6 +132,7 @@ class DeviceRegistry:
             return []
         try:
             data = json.loads(self.devices_file.read_text())
-            return data.get("selected", [])
+            selected: list[str] = data.get("selected", [])
+            return selected
         except (json.JSONDecodeError, KeyError):
             return []

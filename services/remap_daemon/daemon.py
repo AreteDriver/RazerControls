@@ -53,8 +53,8 @@ class RemapDaemon:
                 ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y, ecodes.REL_WHEEL, ecodes.REL_HWHEEL],
             }
             self.uinput = UInput(
-                capabilities,
-                name="Razer Control Center Virtual Device",  # type: ignore[arg-type]
+                capabilities,  # type: ignore[arg-type]
+                name="Razer Control Center Virtual Device",
             )
             self.engine.set_uinput(self.uinput)
             logger.info("Created virtual device: %s", self.uinput.name)
@@ -154,7 +154,7 @@ class RemapDaemon:
                 for key, _ in events:
                     device = key.fileobj
                     try:
-                        for event in device.read():
+                        for event in device.read():  # type: ignore[union-attr]
                             handled = self.engine.process_event(event)
                             if not handled:
                                 # Pass through unhandled events

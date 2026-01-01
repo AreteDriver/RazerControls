@@ -97,7 +97,7 @@ class MacroRecorder:
         if isinstance(code_name, list):
             code_name = code_name[0]
 
-        schema_name = evdev_code_to_schema(code_name)
+        schema_name = evdev_code_to_schema(str(code_name))
 
         recorded = RecordedEvent(
             timestamp=time.time(),
@@ -271,7 +271,7 @@ class DeviceMacroRecorder(MacroRecorder):
                         if code_name:
                             if isinstance(code_name, list):
                                 code_name = code_name[0]
-                            schema_name = evdev_code_to_schema(code_name)
+                            schema_name = evdev_code_to_schema(str(code_name))
                             if schema_name == self.stop_key:
                                 return self.stop()
 
