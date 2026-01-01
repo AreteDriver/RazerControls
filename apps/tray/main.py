@@ -25,6 +25,7 @@ from services.openrazer_bridge import OpenRazerBridge
 
 class TraySignals(QObject):
     """Signals for cross-thread communication."""
+
     profile_changed = Signal(str)
     daemon_status_changed = Signal(bool)
     device_connected = Signal(str)
@@ -337,6 +338,7 @@ class RazerTray(QSystemTrayIcon):
             success = self.openrazer.set_breathing_random(serial)
         elif effect == "wave":
             from services.openrazer_bridge import WaveDirection
+
             success = self.openrazer.set_wave_effect(serial, WaveDirection.RIGHT)
         elif effect == "none":
             success = self.openrazer.set_none_effect(serial)

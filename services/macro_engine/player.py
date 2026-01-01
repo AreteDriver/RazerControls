@@ -166,34 +166,48 @@ class MacroPlayer:
         """Type a string of text."""
         # Character to key mapping
         char_to_key = {
-            ' ': 'SPACE',
-            '\n': 'ENTER',
-            '\t': 'TAB',
-            '-': 'MINUS',
-            '=': 'EQUAL',
-            '[': 'LBRACKET',
-            ']': 'RBRACKET',
-            ';': 'SEMICOLON',
-            "'": 'APOSTROPHE',
-            '`': 'GRAVE',
-            '\\': 'BACKSLASH',
-            ',': 'COMMA',
-            '.': 'DOT',
-            '/': 'SLASH',
+            " ": "SPACE",
+            "\n": "ENTER",
+            "\t": "TAB",
+            "-": "MINUS",
+            "=": "EQUAL",
+            "[": "LBRACKET",
+            "]": "RBRACKET",
+            ";": "SEMICOLON",
+            "'": "APOSTROPHE",
+            "`": "GRAVE",
+            "\\": "BACKSLASH",
+            ",": "COMMA",
+            ".": "DOT",
+            "/": "SLASH",
         }
 
         # Shifted characters
         shift_chars = {
-            '!': '1', '@': '2', '#': '3', '$': '4', '%': '5',
-            '^': '6', '&': '7', '*': '8', '(': '9', ')': '0',
-            '_': 'MINUS', '+': 'EQUAL',
-            '{': 'LBRACKET', '}': 'RBRACKET',
-            ':': 'SEMICOLON', '"': 'APOSTROPHE',
-            '~': 'GRAVE', '|': 'BACKSLASH',
-            '<': 'COMMA', '>': 'DOT', '?': 'SLASH',
+            "!": "1",
+            "@": "2",
+            "#": "3",
+            "$": "4",
+            "%": "5",
+            "^": "6",
+            "&": "7",
+            "*": "8",
+            "(": "9",
+            ")": "0",
+            "_": "MINUS",
+            "+": "EQUAL",
+            "{": "LBRACKET",
+            "}": "RBRACKET",
+            ":": "SEMICOLON",
+            '"': "APOSTROPHE",
+            "~": "GRAVE",
+            "|": "BACKSLASH",
+            "<": "COMMA",
+            ">": "DOT",
+            "?": "SLASH",
         }
 
-        shift_code = schema_to_evdev_code('SHIFT')
+        shift_code = schema_to_evdev_code("SHIFT")
 
         for char in text:
             if self._cancelled:

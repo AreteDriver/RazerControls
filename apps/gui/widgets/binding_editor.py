@@ -112,9 +112,7 @@ class LayerDialog(QDialog):
         layout.addRow(help_label)
 
         # Buttons
-        self.buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addRow(self.buttons)
@@ -178,9 +176,7 @@ class BindingDialog(QDialog):
         layout.addRow("Macro:", self.macro_combo)
 
         # Buttons
-        self.buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addRow(self.buttons)
@@ -300,9 +296,7 @@ class MacroDialog(QDialog):
         layout.addRow("Repeat:", self.repeat_spin)
 
         # Buttons
-        self.buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addRow(self.buttons)
@@ -652,10 +646,12 @@ class BindingEditorWidget(QWidget):
 
         # Confirm deletion
         from PySide6.QtWidgets import QMessageBox
+
         reply = QMessageBox.question(
-            self, "Delete Layer",
+            self,
+            "Delete Layer",
             f"Delete layer '{layer.name}' and all its bindings?",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:

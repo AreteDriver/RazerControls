@@ -12,6 +12,7 @@ from crates.profile_schema import ActionType, Binding, MacroAction, MacroStepTyp
 @dataclass
 class ActiveBinding:
     """Tracks an active (pressed) binding and its output state."""
+
     input_code: int
     binding: Binding
     layer_id: str
@@ -21,6 +22,7 @@ class ActiveBinding:
 @dataclass
 class KeyState:
     """Tracks the complete state of pressed keys and active bindings."""
+
     # Physical keys currently pressed (input codes)
     physical_pressed: set[int] = field(default_factory=set)
 
@@ -331,9 +333,9 @@ class RemapEngine:
     def _type_text(self, text: str) -> None:
         """Type a text string by emitting key events."""
         char_to_key = {
-            ' ': 'SPACE',
-            '\n': 'ENTER',
-            '\t': 'TAB',
+            " ": "SPACE",
+            "\n": "ENTER",
+            "\t": "TAB",
         }
 
         for char in text:
@@ -352,7 +354,7 @@ class RemapEngine:
             code = schema_to_evdev_code(key)
             if code:
                 if needs_shift:
-                    shift_code = schema_to_evdev_code('SHIFT')
+                    shift_code = schema_to_evdev_code("SHIFT")
                     if shift_code:
                         self._emit_key(shift_code, 1)
 

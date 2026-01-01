@@ -37,7 +37,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "BTN_7": "MOUSE_BTN7",
     "BTN_8": "MOUSE_BTN8",
     "BTN_9": "MOUSE_BTN9",
-
     # -------------------------------------------------------------------------
     # Modifier Keys
     # -------------------------------------------------------------------------
@@ -47,9 +46,8 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_RIGHTSHIFT": "SHIFT_R",
     "KEY_LEFTALT": "ALT",
     "KEY_RIGHTALT": "ALT_R",
-    "KEY_LEFTMETA": "META",      # Windows/Super key
+    "KEY_LEFTMETA": "META",  # Windows/Super key
     "KEY_RIGHTMETA": "META_R",
-
     # -------------------------------------------------------------------------
     # Special Keys
     # -------------------------------------------------------------------------
@@ -65,12 +63,11 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_END": "END",
     "KEY_PAGEUP": "PAGEUP",
     "KEY_PAGEDOWN": "PAGEDOWN",
-    "KEY_MENU": "MENU",          # Context menu key
+    "KEY_MENU": "MENU",  # Context menu key
     "KEY_COMPOSE": "COMPOSE",
     "KEY_POWER": "POWER",
     "KEY_SLEEP": "SLEEP",
     "KEY_WAKEUP": "WAKEUP",
-
     # -------------------------------------------------------------------------
     # Arrow Keys
     # -------------------------------------------------------------------------
@@ -78,7 +75,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_DOWN": "DOWN",
     "KEY_LEFT": "LEFT",
     "KEY_RIGHT": "RIGHT",
-
     # -------------------------------------------------------------------------
     # Function Keys (F1-F24)
     # -------------------------------------------------------------------------
@@ -106,7 +102,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_F22": "F22",
     "KEY_F23": "F23",
     "KEY_F24": "F24",
-
     # -------------------------------------------------------------------------
     # Media Keys
     # -------------------------------------------------------------------------
@@ -125,7 +120,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_FASTFORWARD": "FAST_FORWARD",
     "KEY_SHUFFLE": "SHUFFLE",
     "KEY_CONFIG": "CONFIG",
-
     # -------------------------------------------------------------------------
     # Brightness & Display
     # -------------------------------------------------------------------------
@@ -136,7 +130,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_KBDILLUMTOGGLE": "KBD_BRIGHT_TOGGLE",
     "KEY_SWITCHVIDEOMODE": "SWITCH_DISPLAY",
     "KEY_DISPLAYTOGGLE": "DISPLAY_TOGGLE",
-
     # -------------------------------------------------------------------------
     # System Keys
     # -------------------------------------------------------------------------
@@ -162,7 +155,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_PASTE": "PASTE",
     "KEY_FIND": "FIND",
     "KEY_HELP": "HELP",
-
     # -------------------------------------------------------------------------
     # Punctuation & Symbols
     # -------------------------------------------------------------------------
@@ -178,7 +170,6 @@ EVDEV_TO_SCHEMA: dict[str, str] = {
     "KEY_DOT": "DOT",
     "KEY_SLASH": "SLASH",
     "KEY_102ND": "INTL_BACKSLASH",  # International backslash
-
     # -------------------------------------------------------------------------
     # Numpad Keys
     # -------------------------------------------------------------------------
@@ -248,39 +239,105 @@ _build_uinput_map()
 
 KEY_CATEGORIES = {
     "Mouse": [
-        "MOUSE_LEFT", "MOUSE_RIGHT", "MOUSE_MIDDLE",
-        "MOUSE_SIDE", "MOUSE_EXTRA", "MOUSE_FORWARD", "MOUSE_BACK",
+        "MOUSE_LEFT",
+        "MOUSE_RIGHT",
+        "MOUSE_MIDDLE",
+        "MOUSE_SIDE",
+        "MOUSE_EXTRA",
+        "MOUSE_FORWARD",
+        "MOUSE_BACK",
     ],
     "Modifiers": [
-        "CTRL", "CTRL_R", "SHIFT", "SHIFT_R",
-        "ALT", "ALT_R", "META", "META_R",
+        "CTRL",
+        "CTRL_R",
+        "SHIFT",
+        "SHIFT_R",
+        "ALT",
+        "ALT_R",
+        "META",
+        "META_R",
     ],
     "Function": [
-        "F1", "F2", "F3", "F4", "F5", "F6",
-        "F7", "F8", "F9", "F10", "F11", "F12",
-        "F13", "F14", "F15", "F16", "F17", "F18",
-        "F19", "F20", "F21", "F22", "F23", "F24",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "F13",
+        "F14",
+        "F15",
+        "F16",
+        "F17",
+        "F18",
+        "F19",
+        "F20",
+        "F21",
+        "F22",
+        "F23",
+        "F24",
     ],
     "Navigation": [
-        "UP", "DOWN", "LEFT", "RIGHT",
-        "HOME", "END", "PAGEUP", "PAGEDOWN",
-        "INSERT", "DELETE",
+        "UP",
+        "DOWN",
+        "LEFT",
+        "RIGHT",
+        "HOME",
+        "END",
+        "PAGEUP",
+        "PAGEDOWN",
+        "INSERT",
+        "DELETE",
     ],
     "Media": [
-        "PLAY_PAUSE", "STOP", "PREV_TRACK", "NEXT_TRACK",
-        "MUTE", "VOL_DOWN", "VOL_UP",
-        "REWIND", "FAST_FORWARD",
+        "PLAY_PAUSE",
+        "STOP",
+        "PREV_TRACK",
+        "NEXT_TRACK",
+        "MUTE",
+        "VOL_DOWN",
+        "VOL_UP",
+        "REWIND",
+        "FAST_FORWARD",
     ],
     "System": [
-        "ESC", "TAB", "CAPS", "ENTER", "SPACE", "BACKSPACE",
-        "PRINT_SCREEN", "SCROLL_LOCK", "PAUSE",
-        "MENU", "POWER", "SLEEP",
+        "ESC",
+        "TAB",
+        "CAPS",
+        "ENTER",
+        "SPACE",
+        "BACKSPACE",
+        "PRINT_SCREEN",
+        "SCROLL_LOCK",
+        "PAUSE",
+        "MENU",
+        "POWER",
+        "SLEEP",
     ],
     "Numpad": [
         "NUM_LOCK",
-        "NUM_0", "NUM_1", "NUM_2", "NUM_3", "NUM_4",
-        "NUM_5", "NUM_6", "NUM_7", "NUM_8", "NUM_9",
-        "NUM_ENTER", "NUM_PLUS", "NUM_MINUS", "NUM_MULT", "NUM_DIV", "NUM_DOT",
+        "NUM_0",
+        "NUM_1",
+        "NUM_2",
+        "NUM_3",
+        "NUM_4",
+        "NUM_5",
+        "NUM_6",
+        "NUM_7",
+        "NUM_8",
+        "NUM_9",
+        "NUM_ENTER",
+        "NUM_PLUS",
+        "NUM_MINUS",
+        "NUM_MULT",
+        "NUM_DIV",
+        "NUM_DOT",
     ],
 }
 
@@ -288,6 +345,7 @@ KEY_CATEGORIES = {
 # =============================================================================
 # PUBLIC API
 # =============================================================================
+
 
 def evdev_code_to_schema(evdev_name: str) -> str:
     """Convert an evdev code name to schema key name.

@@ -17,6 +17,7 @@ def main():
     # Apply dark theme
     app.setStyle("Fusion")
     from .theme import apply_dark_theme
+
     apply_dark_theme(app)
 
     window = MainWindow()

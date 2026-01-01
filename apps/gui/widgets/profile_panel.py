@@ -38,9 +38,7 @@ class NewProfileDialog(QDialog):
         self.desc_edit.setMaximumHeight(80)
         layout.addRow("Description:", self.desc_edit)
 
-        self.buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addRow(self.buttons)
@@ -168,9 +166,10 @@ class ProfilePanel(QWidget):
 
         profile_id = item.data(Qt.UserRole)
         reply = QMessageBox.question(
-            self, "Delete Profile",
+            self,
+            "Delete Profile",
             "Are you sure you want to delete this profile?",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:

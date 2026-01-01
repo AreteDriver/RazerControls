@@ -8,6 +8,7 @@ from pydbus import SessionBus
 
 class LightingEffect(Enum):
     """Available lighting effects."""
+
     NONE = "none"
     STATIC = "static"
     SPECTRUM = "spectrum"
@@ -22,12 +23,14 @@ class LightingEffect(Enum):
 
 class WaveDirection(Enum):
     """Wave effect direction."""
+
     LEFT = 1
     RIGHT = 2
 
 
 class ReactiveSpeed(Enum):
     """Reactive effect speed."""
+
     SHORT = 1
     MEDIUM = 2
     LONG = 3
@@ -36,6 +39,7 @@ class ReactiveSpeed(Enum):
 @dataclass
 class RazerDevice:
     """Represents a Razer device discovered via OpenRazer."""
+
     serial: str
     name: str
     device_type: str
@@ -318,8 +322,9 @@ class OpenRazerBridge:
             print(f"Error setting breathing: {e}")
             return False
 
-    def set_breathing_dual(self, serial: str, r1: int, g1: int, b1: int,
-                           r2: int, g2: int, b2: int) -> bool:
+    def set_breathing_dual(
+        self, serial: str, r1: int, g1: int, b1: int, r2: int, g2: int, b2: int
+    ) -> bool:
         """Set breathing effect with two colors."""
         device = self.get_device(serial)
         if not device or not device.has_lighting:
@@ -361,8 +366,9 @@ class OpenRazerBridge:
             print(f"Error setting wave: {e}")
             return False
 
-    def set_reactive_effect(self, serial: str, r: int, g: int, b: int,
-                            speed: ReactiveSpeed = ReactiveSpeed.MEDIUM) -> bool:
+    def set_reactive_effect(
+        self, serial: str, r: int, g: int, b: int, speed: ReactiveSpeed = ReactiveSpeed.MEDIUM
+    ) -> bool:
         """Set reactive effect - lights up on keypress."""
         device = self.get_device(serial)
         if not device or not device.has_lighting:
@@ -376,8 +382,14 @@ class OpenRazerBridge:
             print(f"Error setting reactive: {e}")
             return False
 
-    def set_starlight_effect(self, serial: str, r: int = 0, g: int = 255, b: int = 0,
-                             speed: ReactiveSpeed = ReactiveSpeed.MEDIUM) -> bool:
+    def set_starlight_effect(
+        self,
+        serial: str,
+        r: int = 0,
+        g: int = 255,
+        b: int = 0,
+        speed: ReactiveSpeed = ReactiveSpeed.MEDIUM,
+    ) -> bool:
         """Set starlight effect - random twinkling."""
         device = self.get_device(serial)
         if not device or not device.has_lighting:

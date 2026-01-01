@@ -496,7 +496,7 @@ def _format_step(step: MacroStep) -> str:
         return f"⏱ {step.delay_ms}ms"
     elif step.type == MacroStepType.TEXT:
         text = step.text[:30] + "..." if len(step.text or "") > 30 else step.text
-        return f"📝 \"{text}\""
+        return f'📝 "{text}"'
     return str(step)
 
 
@@ -527,7 +527,8 @@ Step formats for create:
     )
 
     parser.add_argument(
-        "--config-dir", "-c",
+        "--config-dir",
+        "-c",
         type=Path,
         help="Config directory",
     )

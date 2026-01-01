@@ -13,8 +13,13 @@ from crates.profile_schema import Profile, ProfileLoader
 class ActiveWindowInfo:
     """Information about the currently active window."""
 
-    def __init__(self, pid: int | None = None, process_name: str | None = None,
-                 window_class: str | None = None, window_title: str | None = None):
+    def __init__(
+        self,
+        pid: int | None = None,
+        process_name: str | None = None,
+        window_class: str | None = None,
+        window_title: str | None = None,
+    ):
         self.pid = pid
         self.process_name = process_name
         self.window_class = window_class
@@ -45,11 +50,7 @@ class X11Backend(WindowBackend):
     def is_available(self) -> bool:
         """Check if xdotool is available."""
         try:
-            result = subprocess.run(
-                ["which", "xdotool"],
-                capture_output=True,
-                timeout=2
-            )
+            result = subprocess.run(["which", "xdotool"], capture_output=True, timeout=2)
             return result.returncode == 0
         except Exception:
             return False
@@ -59,10 +60,7 @@ class X11Backend(WindowBackend):
         try:
             # Get active window ID
             result = subprocess.run(
-                ["xdotool", "getactivewindow"],
-                capture_output=True,
-                text=True,
-                timeout=2
+                ["xdotool", "getactivewindow"], capture_output=True, text=True, timeout=2
             )
             if result.returncode != 0:
                 return None
@@ -74,10 +72,7 @@ class X11Backend(WindowBackend):
             # Get window PID
             pid = None
             result = subprocess.run(
-                ["xdotool", "getwindowpid", window_id],
-                capture_output=True,
-                text=True,
-                timeout=2
+                ["xdotool", "getwindowpid", window_id], capture_output=True, text=True, timeout=2
             )
             if result.returncode == 0:
                 try:
@@ -109,7 +104,7 @@ class X11Backend(WindowBackend):
                 ["xdotool", "getwindowclassname", window_id],
                 capture_output=True,
                 text=True,
-                timeout=2
+                timeout=2,
             )
             if result.returncode == 0:
                 window_class = result.stdout.strip()
@@ -117,10 +112,7 @@ class X11Backend(WindowBackend):
             # Get window title
             window_title = None
             result = subprocess.run(
-                ["xdotool", "getwindowname", window_id],
-                capture_output=True,
-                text=True,
-                timeout=2
+                ["xdotool", "getwindowname", window_id], capture_output=True, text=True, timeout=2
             )
             if result.returncode == 0:
                 window_title = result.stdout.strip()
@@ -129,7 +121,7 @@ class X11Backend(WindowBackend):
                 pid=pid,
                 process_name=process_name,
                 window_class=window_class,
-                window_title=window_title
+                window_title=window_title,
             )
 
         except subprocess.TimeoutExpired:
@@ -144,6 +136,7 @@ class GnomeWaylandBackend(WindowBackend):
     def is_available(self) -> bool:
         """Check if running GNOME on Wayland."""
         import os
+
         session_type = os.environ.get("XDG_SESSION_TYPE", "")
         desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
         return session_type == "wayland" and "gnome" in desktop
@@ -159,13 +152,21 @@ class GnomeWaylandBackend(WindowBackend):
                 ?.get_pid() || 0
             """
             result = subprocess.run(
-                ["gdbus", "call", "--session",
-                 "--dest", "org.gnome.Shell",
-                 "--object-path", "/org/gnome/Shell",
-                 "--method", "org.gnome.Shell.Eval", script],
+                [
+                    "gdbus",
+                    "call",
+                    "--session",
+                    "--dest",
+                    "org.gnome.Shell",
+                    "--object-path",
+                    "/org/gnome/Shell",
+                    "--method",
+                    "org.gnome.Shell.Eval",
+                    script,
+                ],
                 capture_output=True,
                 text=True,
-                timeout=2
+                timeout=2,
             )
 
             if result.returncode != 0:
@@ -178,6 +179,7 @@ class GnomeWaylandBackend(WindowBackend):
 
             # Extract PID from output
             import re
+
             match = re.search(r"'(\d+)'", output)
             if not match:
                 return None
@@ -286,9 +288,11 @@ class AppWatcher:
             return
 
         # Check if window changed
-        if (self._last_window_info and
-            self._last_window_info.pid == window_info.pid and
-            self._last_window_info.process_name == window_info.process_name):
+        if (
+            self._last_window_info
+            and self._last_window_info.pid == window_info.pid
+            and self._last_window_info.process_name == window_info.process_name
+        ):
             return
 
         self._last_window_info = window_info

@@ -24,7 +24,7 @@ class TestActiveWindowInfo:
             pid=1234,
             process_name="firefox",
             window_class="Navigator",
-            window_title="Mozilla Firefox"
+            window_title="Mozilla Firefox",
         )
         assert info.pid == 1234
         assert info.process_name == "firefox"
@@ -45,7 +45,7 @@ class TestPatternMatching:
     @pytest.fixture
     def watcher(self):
         """Create a watcher instance for testing."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = None
             return watcher
@@ -81,14 +81,14 @@ class TestX11Backend:
     def test_is_available_with_xdotool(self):
         """Test availability check when xdotool exists."""
         backend = X11Backend()
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             assert backend.is_available() is True
 
     def test_is_available_without_xdotool(self):
         """Test availability check when xdotool doesn't exist."""
         backend = X11Backend()
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1)
             assert backend.is_available() is False
 
@@ -114,9 +114,9 @@ class TestX11Backend:
                 result.returncode = 1
             return result
 
-        with patch('subprocess.run', side_effect=mock_run):
-            with patch('pathlib.Path.exists', return_value=True):
-                with patch('pathlib.Path.read_text', return_value="firefox\n"):
+        with patch("subprocess.run", side_effect=mock_run):
+            with patch("pathlib.Path.exists", return_value=True):
+                with patch("pathlib.Path.read_text", return_value="firefox\n"):
                     info = backend.get_active_window()
 
         assert info is not None
@@ -128,7 +128,7 @@ class TestX11Backend:
     def test_get_active_window_no_window(self):
         """Test when no window is active."""
         backend = X11Backend()
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1)
             info = backend.get_active_window()
             assert info is None
@@ -140,21 +140,21 @@ class TestGnomeWaylandBackend:
     def test_is_available_on_gnome_wayland(self):
         """Test availability on GNOME Wayland."""
         backend = GnomeWaylandBackend()
-        env = {'XDG_SESSION_TYPE': 'wayland', 'XDG_CURRENT_DESKTOP': 'GNOME'}
-        with patch.dict('os.environ', env):
+        env = {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "GNOME"}
+        with patch.dict("os.environ", env):
             assert backend.is_available() is True
 
     def test_is_available_on_x11(self):
         """Test availability on X11."""
         backend = GnomeWaylandBackend()
-        with patch.dict('os.environ', {'XDG_SESSION_TYPE': 'x11', 'XDG_CURRENT_DESKTOP': 'GNOME'}):
+        with patch.dict("os.environ", {"XDG_SESSION_TYPE": "x11", "XDG_CURRENT_DESKTOP": "GNOME"}):
             assert backend.is_available() is False
 
     def test_is_available_on_kde(self):
         """Test availability on KDE."""
         backend = GnomeWaylandBackend()
-        env = {'XDG_SESSION_TYPE': 'wayland', 'XDG_CURRENT_DESKTOP': 'KDE'}
-        with patch.dict('os.environ', env):
+        env = {"XDG_SESSION_TYPE": "wayland", "XDG_CURRENT_DESKTOP": "KDE"}
+        with patch.dict("os.environ", env):
             assert backend.is_available() is False
 
 
@@ -163,35 +163,35 @@ class TestAppWatcher:
 
     def test_start_without_backend(self):
         """Test starting watcher without a backend."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = None
             assert watcher.start() is False
 
     def test_is_running(self):
         """Test is_running property."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = None
             assert watcher.is_running is False
 
     def test_backend_name_none(self):
         """Test backend_name when no backend."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = None
             assert watcher.backend_name is None
 
     def test_backend_name_x11(self):
         """Test backend_name with X11 backend."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = X11Backend()
             assert watcher.backend_name == "X11Backend"
 
     def test_stop_when_not_running(self):
         """Test stopping when not running."""
-        with patch.object(AppWatcher, '_init_backend'):
+        with patch.object(AppWatcher, "_init_backend"):
             watcher = AppWatcher()
             watcher._backend = None
             watcher.stop()  # Should not raise

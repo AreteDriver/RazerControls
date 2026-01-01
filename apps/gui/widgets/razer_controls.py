@@ -125,9 +125,7 @@ class RazerControlsWidget(QWidget):
         # Effect
         layout.addWidget(QLabel("Effect:"), 1, 0)
         self.effect_combo = QComboBox()
-        self.effect_combo.addItems([
-            "Static", "Breathing", "Spectrum", "Reactive", "Off"
-        ])
+        self.effect_combo.addItems(["Static", "Breathing", "Spectrum", "Reactive", "Off"])
         self.effect_combo.currentTextChanged.connect(self._on_effect_changed)
         layout.addWidget(self.effect_combo, 1, 1, 1, 2)
 

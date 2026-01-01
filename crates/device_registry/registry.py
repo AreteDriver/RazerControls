@@ -8,11 +8,12 @@ from pathlib import Path
 @dataclass
 class InputDevice:
     """Represents an input device."""
-    stable_id: str              # e.g., usb-Razer_Razer_Basilisk_V2-event-mouse
-    name: str                   # Human readable name from device
-    event_path: str             # e.g., /dev/input/event8
-    by_id_path: str | None   # e.g., /dev/input/by-id/usb-Razer_...
-    by_path_path: str | None # e.g., /dev/input/by-path/...
+
+    stable_id: str  # e.g., usb-Razer_Razer_Basilisk_V2-event-mouse
+    name: str  # Human readable name from device
+    event_path: str  # e.g., /dev/input/event8
+    by_id_path: str | None  # e.g., /dev/input/by-id/usb-Razer_...
+    by_path_path: str | None  # e.g., /dev/input/by-path/...
     is_mouse: bool = False
     is_keyboard: bool = False
     capabilities: list[str] = field(default_factory=list)

@@ -13,6 +13,7 @@ from crates.profile_schema import MacroAction, MacroStep, MacroStepType
 @dataclass
 class RecordedEvent:
     """A single recorded event with timestamp."""
+
     timestamp: float
     code: int
     value: int  # 0=up, 1=down, 2=repeat
@@ -148,40 +149,50 @@ class MacroRecorder:
                 delay_ms = int((event.timestamp - last_time) * 1000)
                 if delay_ms >= self.min_delay_ms:
                     delay_ms = min(delay_ms, self.max_delay_ms)
-                    steps.append(MacroStep(
-                        type=MacroStepType.DELAY,
-                        delay_ms=delay_ms,
-                    ))
+                    steps.append(
+                        MacroStep(
+                            type=MacroStepType.DELAY,
+                            delay_ms=delay_ms,
+                        )
+                    )
 
             # Check for quick press+release (merge into KEY_PRESS)
-            if (self.merge_press_release and
-                event.value == 1 and  # Key down
-                i + 1 < len(self._events)):
-
+            if (
+                self.merge_press_release
+                and event.value == 1  # Key down
+                and i + 1 < len(self._events)
+            ):
                 next_event = self._events[i + 1]
-                if (next_event.code == event.code and
-                    next_event.value == 0 and  # Key up
-                    (next_event.timestamp - event.timestamp) < 0.1):  # Within 100ms
-
-                    steps.append(MacroStep(
-                        type=MacroStepType.KEY_PRESS,
-                        key=event.key_name,
-                    ))
+                if (
+                    next_event.code == event.code
+                    and next_event.value == 0  # Key up
+                    and (next_event.timestamp - event.timestamp) < 0.1
+                ):  # Within 100ms
+                    steps.append(
+                        MacroStep(
+                            type=MacroStepType.KEY_PRESS,
+                            key=event.key_name,
+                        )
+                    )
                     last_time = next_event.timestamp
                     i += 2
                     continue
 
             # Regular key down/up
             if event.value == 1:
-                steps.append(MacroStep(
-                    type=MacroStepType.KEY_DOWN,
-                    key=event.key_name,
-                ))
+                steps.append(
+                    MacroStep(
+                        type=MacroStepType.KEY_DOWN,
+                        key=event.key_name,
+                    )
+                )
             elif event.value == 0:
-                steps.append(MacroStep(
-                    type=MacroStepType.KEY_UP,
-                    key=event.key_name,
-                ))
+                steps.append(
+                    MacroStep(
+                        type=MacroStepType.KEY_UP,
+                        key=event.key_name,
+                    )
+                )
 
             last_time = event.timestamp
             i += 1

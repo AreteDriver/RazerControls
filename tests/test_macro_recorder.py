@@ -340,7 +340,7 @@ class TestChordRecording:
         press_steps = [s for s in macro.steps if s.type == MacroStepType.KEY_PRESS]
 
         assert len(down_steps) == 1  # CTRL down
-        assert len(up_steps) == 1    # CTRL up
+        assert len(up_steps) == 1  # CTRL up
         assert len(press_steps) == 1  # C press (merged)
 
 

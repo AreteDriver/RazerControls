@@ -57,7 +57,7 @@ def cmd_list(args):
         col_width = 20
         cols = 4
         for i in range(0, len(keys), cols):
-            row = keys[i:i + cols]
+            row = keys[i : i + cols]
             print("  " + "".join(k.ljust(col_width) for k in row))
         print(f"\nTotal: {len(keys)} keys")
 
@@ -247,12 +247,14 @@ Examples:
 
     # List command
     parser.add_argument(
-        "--list", "-l",
+        "--list",
+        "-l",
         action="store_true",
         help="List available keys",
     )
     parser.add_argument(
-        "--category", "-c",
+        "--category",
+        "-c",
         help="Filter list by category (Mouse, Modifiers, Function, etc.)",
     )
     parser.add_argument(
@@ -268,7 +270,8 @@ Examples:
 
     # Info command
     parser.add_argument(
-        "--info", "-i",
+        "--info",
+        "-i",
         metavar="KEY",
         help="Get detailed info about a key",
     )
@@ -282,7 +285,8 @@ Examples:
 
     # Validate command
     parser.add_argument(
-        "--validate", "-v",
+        "--validate",
+        "-v",
         metavar="PROFILE",
         help="Validate a profile JSON file",
     )

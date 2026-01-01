@@ -155,9 +155,7 @@ def cmd_new(args) -> int:
         name=args.name,
         description=args.description or "",
         input_devices=input_devices,
-        layers=[
-            Layer(id="base", name="Base Layer", bindings=[])
-        ],
+        layers=[Layer(id="base", name="Base Layer", bindings=[])],
         is_default=args.default,
     )
 
@@ -343,8 +341,7 @@ def cmd_validate(args) -> int:
                 valid, msg = validate_key(key)
                 if not valid:
                     errors.append(
-                        f"Layer '{layer.name}' binding {binding.input_code}: "
-                        f"output key {msg}"
+                        f"Layer '{layer.name}' binding {binding.input_code}: output key {msg}"
                     )
 
             # Check macro references
@@ -433,7 +430,8 @@ Examples:
     )
 
     parser.add_argument(
-        "--config-dir", "-c",
+        "--config-dir",
+        "-c",
         type=Path,
         help="Config directory (default: ~/.config/razer-control-center)",
     )

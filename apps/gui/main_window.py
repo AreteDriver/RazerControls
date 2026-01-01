@@ -302,7 +302,9 @@ class MainWindow(QMainWindow):
         try:
             result = subprocess.run(
                 ["systemctl", "--user", "is-active", "razer-remap-daemon"],
-                capture_output=True, text=True, timeout=2
+                capture_output=True,
+                text=True,
+                timeout=2,
             )
             if result.returncode == 0:
                 self.daemon_status_label.setText("Running")
@@ -322,8 +324,7 @@ class MainWindow(QMainWindow):
         """Start the remap daemon."""
         try:
             subprocess.run(
-                ["systemctl", "--user", "start", "razer-remap-daemon"],
-                check=True, timeout=5
+                ["systemctl", "--user", "start", "razer-remap-daemon"], check=True, timeout=5
             )
             self.statusbar.showMessage("Daemon started")
             self._update_daemon_status()
@@ -331,16 +332,14 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", f"Failed to start daemon: {e}")
         except FileNotFoundError:
             QMessageBox.warning(
-                self, "Error",
-                "systemctl not found. Please install the systemd service first."
+                self, "Error", "systemctl not found. Please install the systemd service first."
             )
 
     def _stop_daemon(self):
         """Stop the remap daemon."""
         try:
             subprocess.run(
-                ["systemctl", "--user", "stop", "razer-remap-daemon"],
-                check=True, timeout=5
+                ["systemctl", "--user", "stop", "razer-remap-daemon"], check=True, timeout=5
             )
             self.statusbar.showMessage("Daemon stopped")
             self._update_daemon_status()
@@ -351,8 +350,7 @@ class MainWindow(QMainWindow):
         """Restart the remap daemon."""
         try:
             subprocess.run(
-                ["systemctl", "--user", "restart", "razer-remap-daemon"],
-                check=True, timeout=5
+                ["systemctl", "--user", "restart", "razer-remap-daemon"], check=True, timeout=5
             )
             self.statusbar.showMessage("Daemon restarted")
             self._update_daemon_status()
@@ -370,8 +368,7 @@ class MainWindow(QMainWindow):
         """Enable daemon autostart."""
         try:
             subprocess.run(
-                ["systemctl", "--user", "enable", "razer-remap-daemon"],
-                check=True, timeout=5
+                ["systemctl", "--user", "enable", "razer-remap-daemon"], check=True, timeout=5
             )
             self.statusbar.showMessage("Autostart enabled")
         except Exception as e:
@@ -381,8 +378,7 @@ class MainWindow(QMainWindow):
         """Disable daemon autostart."""
         try:
             subprocess.run(
-                ["systemctl", "--user", "disable", "razer-remap-daemon"],
-                check=True, timeout=5
+                ["systemctl", "--user", "disable", "razer-remap-daemon"], check=True, timeout=5
             )
             self.statusbar.showMessage("Autostart disabled")
         except Exception as e:

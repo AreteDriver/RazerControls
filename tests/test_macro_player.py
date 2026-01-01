@@ -261,9 +261,7 @@ class TestRepeat:
 
         # Count KEY_X presses (down events)
         x_presses = sum(
-            1
-            for c in mock_uinput.write.call_args_list
-            if c == call(ecodes.EV_KEY, ecodes.KEY_X, 1)
+            1 for c in mock_uinput.write.call_args_list if c == call(ecodes.EV_KEY, ecodes.KEY_X, 1)
         )
         assert x_presses == 3
 

@@ -397,9 +397,7 @@ class TestLightingEffects:
         bridge = OpenRazerBridge()
         bridge._devices["PM1234567890"] = sample_device
 
-        result = bridge.set_breathing_dual(
-            "PM1234567890", 255, 0, 0, 0, 0, 255
-        )
+        result = bridge.set_breathing_dual("PM1234567890", 255, 0, 0, 0, 0, 255)
 
         assert result is True
         mock_device.setBreathDual.assert_called_with(255, 0, 0, 0, 0, 255)
@@ -435,9 +433,7 @@ class TestLightingEffects:
         bridge = OpenRazerBridge()
         bridge._devices["PM1234567890"] = sample_device
 
-        result = bridge.set_reactive_effect(
-            "PM1234567890", 255, 255, 0, ReactiveSpeed.SHORT
-        )
+        result = bridge.set_reactive_effect("PM1234567890", 255, 255, 0, ReactiveSpeed.SHORT)
 
         assert result is True
         mock_device.setReactive.assert_called_with(255, 255, 0, 1)

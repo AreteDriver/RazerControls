@@ -1,6 +1,6 @@
 # Razer Control Center for Linux
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/AreteDriver/Razer_Controls/releases)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/AreteDriver/Razer_Controls/releases)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)]()

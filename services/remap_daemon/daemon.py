@@ -74,9 +74,7 @@ class RemapDaemon:
             name="Default Profile",
             description="Default profile - no remapping",
             input_devices=mouse_devices[:1] if mouse_devices else [],
-            layers=[
-                Layer(id="base", name="Base Layer", bindings=[])
-            ],
+            layers=[Layer(id="base", name="Base Layer", bindings=[])],
             is_default=True,
         )
 
