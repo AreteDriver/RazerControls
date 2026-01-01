@@ -2,7 +2,7 @@
 
 import uuid
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -15,15 +15,260 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QProgressBar,
     QPushButton,
     QSpinBox,
     QSplitter,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
 from crates.keycode_map import get_all_schema_keys
 from crates.profile_schema import MacroAction, MacroStep, MacroStepType
+
+
+class RecordingWorker(QThread):
+    """Background worker for recording macros from input devices."""
+
+    step_recorded = Signal(str)  # Key name for live display
+    recording_finished = Signal(object)  # MacroAction result
+    error_occurred = Signal(str)  # Error message
+    progress_update = Signal(int)  # Seconds elapsed
+
+    def __init__(
+        self,
+        device_path: str,
+        stop_key: str = "ESC",
+        timeout: int = 60,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self.device_path = device_path
+        self.stop_key = stop_key
+        self.timeout = timeout
+        self._should_stop = False
+
+    def run(self):
+        """Run the recording in background thread."""
+        try:
+            # Import here to avoid issues if evdev not installed
+            from services.macro_engine.recorder import DeviceMacroRecorder, RecordedEvent
+
+            recorder = DeviceMacroRecorder(
+                device_path=self.device_path,
+                stop_key=self.stop_key,
+            )
+
+            def on_event(event: RecordedEvent):
+                action = "↓" if event.value == 1 else "↑"
+                self.step_recorded.emit(f"{event.key_name} {action}")
+
+            macro = recorder.record_from_device(
+                timeout=float(self.timeout),
+                on_event=on_event,
+            )
+
+            self.recording_finished.emit(macro)
+
+        except PermissionError:
+            self.error_occurred.emit(
+                "Permission denied. Add yourself to the 'input' group:\n"
+                "  sudo usermod -aG input $USER\n"
+                "Then log out and back in."
+            )
+        except FileNotFoundError:
+            self.error_occurred.emit(f"Device not found: {self.device_path}")
+        except Exception as e:
+            self.error_occurred.emit(f"Recording error: {e}")
+
+    def stop(self):
+        """Signal the worker to stop."""
+        self._should_stop = True
+
+
+class RecordingDialog(QDialog):
+    """Dialog for configuring and running macro recording."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Record Macro from Device")
+        self.setMinimumWidth(450)
+        self.setMinimumHeight(350)
+
+        self._worker: RecordingWorker | None = None
+        self._recorded_macro: MacroAction | None = None
+
+        self._setup_ui()
+        self._populate_devices()
+
+    def _setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        # Device selection
+        device_group = QGroupBox("Device Settings")
+        device_layout = QFormLayout(device_group)
+
+        self.device_combo = QComboBox()
+        device_layout.addRow("Input Device:", self.device_combo)
+
+        self.stop_key_combo = QComboBox()
+        self.stop_key_combo.addItems(["ESC", "F12", "PAUSE", "SCROLLLOCK"])
+        self.stop_key_combo.setEditable(True)
+        device_layout.addRow("Stop Key:", self.stop_key_combo)
+
+        self.timeout_spin = QSpinBox()
+        self.timeout_spin.setRange(10, 300)
+        self.timeout_spin.setValue(60)
+        self.timeout_spin.setSuffix(" seconds")
+        device_layout.addRow("Timeout:", self.timeout_spin)
+
+        layout.addWidget(device_group)
+
+        # Recording status
+        status_group = QGroupBox("Recording")
+        status_layout = QVBoxLayout(status_group)
+
+        self.status_label = QLabel("Ready to record")
+        self.status_label.setStyleSheet("font-weight: bold;")
+        status_layout.addWidget(self.status_label)
+
+        self.key_log = QTextEdit()
+        self.key_log.setReadOnly(True)
+        self.key_log.setMaximumHeight(120)
+        self.key_log.setPlaceholderText("Recorded keys will appear here...")
+        status_layout.addWidget(self.key_log)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
+        status_layout.addWidget(self.progress_bar)
+
+        layout.addWidget(status_group)
+
+        # Buttons
+        btn_layout = QHBoxLayout()
+
+        self.start_btn = QPushButton("Start Recording")
+        self.start_btn.clicked.connect(self._start_recording)
+        btn_layout.addWidget(self.start_btn)
+
+        self.stop_btn = QPushButton("Stop")
+        self.stop_btn.clicked.connect(self._stop_recording)
+        self.stop_btn.setEnabled(False)
+        btn_layout.addWidget(self.stop_btn)
+
+        btn_layout.addStretch()
+
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(self.reject)
+        btn_layout.addWidget(self.cancel_btn)
+
+        self.accept_btn = QPushButton("Use Recording")
+        self.accept_btn.clicked.connect(self.accept)
+        self.accept_btn.setEnabled(False)
+        btn_layout.addWidget(self.accept_btn)
+
+        layout.addLayout(btn_layout)
+
+    def _populate_devices(self):
+        """Find available input devices."""
+        self.device_combo.clear()
+
+        try:
+            from evdev import InputDevice, ecodes, list_devices
+
+            for path in list_devices():
+                try:
+                    dev = InputDevice(path)
+                    caps = dev.capabilities()
+                    # Only show devices with key events
+                    if ecodes.EV_KEY in caps:
+                        name = dev.name or "Unknown"
+                        self.device_combo.addItem(f"{name} ({path})", path)
+                except Exception:
+                    continue
+
+        except ImportError:
+            self.device_combo.addItem("evdev not installed", None)
+            self.start_btn.setEnabled(False)
+
+        if self.device_combo.count() == 0:
+            self.device_combo.addItem("No input devices found", None)
+            self.start_btn.setEnabled(False)
+
+    def _start_recording(self):
+        """Start the recording worker."""
+        device_path = self.device_combo.currentData()
+        if not device_path:
+            QMessageBox.warning(self, "Error", "Please select a valid input device.")
+            return
+
+        self.key_log.clear()
+        self.status_label.setText("Recording... Press keys on your device")
+        self.status_label.setStyleSheet("color: red; font-weight: bold;")
+        self.start_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+        self.device_combo.setEnabled(False)
+        self.stop_key_combo.setEnabled(False)
+        self.timeout_spin.setEnabled(False)
+
+        stop_key = self.stop_key_combo.currentText()
+
+        self._worker = RecordingWorker(
+            device_path=device_path,
+            stop_key=stop_key,
+            timeout=self.timeout_spin.value(),
+            parent=self,
+        )
+        self._worker.step_recorded.connect(self._on_step_recorded)
+        self._worker.recording_finished.connect(self._on_recording_finished)
+        self._worker.error_occurred.connect(self._on_error)
+        self._worker.start()
+
+    def _stop_recording(self):
+        """Stop the recording worker."""
+        if self._worker and self._worker.isRunning():
+            self._worker.stop()
+            self._worker.wait(2000)
+
+    def _on_step_recorded(self, key_text: str):
+        """Handle a key being recorded."""
+        self.key_log.append(key_text)
+        # Auto-scroll to bottom
+        scrollbar = self.key_log.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+    def _on_recording_finished(self, macro: MacroAction):
+        """Handle recording completion."""
+        self._recorded_macro = macro
+        step_count = len(macro.steps) if macro else 0
+
+        self.status_label.setText(f"Recording complete: {step_count} steps")
+        self.status_label.setStyleSheet("color: green; font-weight: bold;")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.device_combo.setEnabled(True)
+        self.stop_key_combo.setEnabled(True)
+        self.timeout_spin.setEnabled(True)
+        self.accept_btn.setEnabled(step_count > 0)
+
+    def _on_error(self, error_msg: str):
+        """Handle recording error."""
+        self.status_label.setText("Error")
+        self.status_label.setStyleSheet("color: red; font-weight: bold;")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.device_combo.setEnabled(True)
+        self.stop_key_combo.setEnabled(True)
+        self.timeout_spin.setEnabled(True)
+
+        QMessageBox.critical(self, "Recording Error", error_msg)
+
+    def get_recorded_macro(self) -> MacroAction | None:
+        """Get the recorded macro."""
+        return self._recorded_macro
 
 
 class StepEditorDialog(QDialog):
@@ -500,24 +745,31 @@ class MacroEditorWidget(QWidget):
         if not self._current_macro:
             return
 
-        self._recording = True
-        self.record_btn.setText("Stop Recording")
-        self.record_status.setText("Recording... Press keys on your device")
-        self.record_status.setStyleSheet("color: red; font-weight: bold;")
+        # Show recording dialog
+        dialog = RecordingDialog(parent=self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            recorded = dialog.get_recorded_macro()
+            if recorded and recorded.steps:
+                # Replace current macro steps with recorded steps
+                self._current_macro.steps = recorded.steps
+                self._refresh_steps_list()
+                self._emit_macro_changed()
+                self.test_btn.setEnabled(True)
 
-        # Note: Actual device recording would require evdev access
-        # For now, show a message about the limitation
-        QMessageBox.information(
-            self,
-            "Recording",
-            "Device recording requires running the daemon with elevated privileges.\n\n"
-            "For now, use 'Add Step' to manually add macro steps, or use the CLI:\n"
-            "  razer-macro record --device /dev/input/eventX",
-        )
-        self._stop_recording()
+                self.record_status.setText(f"Recorded {len(recorded.steps)} steps")
+                self.record_status.setStyleSheet("color: green;")
+            else:
+                self.record_status.setText("No steps recorded")
+                self.record_status.setStyleSheet("color: orange;")
+        else:
+            self.record_status.setText("")
+            self.record_status.setStyleSheet("")
+
+        # Reset button state
+        self.record_btn.setChecked(False)
 
     def _stop_recording(self):
-        """Stop recording."""
+        """Stop recording (legacy, kept for compatibility)."""
         self._recording = False
         self.record_btn.setText("Record from Device")
         self.record_btn.setChecked(False)
