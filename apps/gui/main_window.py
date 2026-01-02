@@ -126,6 +126,12 @@ class MainWindow(QMainWindow):
         """Set up the menu bar."""
         menubar = self.menuBar()
 
+        # Settings menu
+        settings_menu = menubar.addMenu("Settings")
+
+        hotkeys_action = settings_menu.addAction("Configure Hotkeys...")
+        hotkeys_action.triggered.connect(self._configure_hotkeys)
+
         # Help menu
         help_menu = menubar.addMenu("Help")
 
@@ -157,6 +163,13 @@ class MainWindow(QMainWindow):
             "and DPI settings for your Razer devices.\n\n"
             "https://github.com/AreteDriver/Razer_Controls",
         )
+
+    def _configure_hotkeys(self):
+        """Open the hotkey configuration dialog."""
+        from .widgets.hotkey_editor import HotkeyEditorDialog
+
+        dialog = HotkeyEditorDialog(self)
+        dialog.exec()
 
     def _setup_devices_tab(self):
         """Set up the devices configuration tab."""

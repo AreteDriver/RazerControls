@@ -14,6 +14,7 @@ from .schema import (
     MacroStepType,
     Profile,
 )
+from .settings import AppSettings, HotkeyBinding, HotkeySettings, SettingsManager
 
 __all__ = [
     "Profile",
@@ -28,4 +29,8 @@ __all__ = [
     "MacroStepType",
     "LightingEffect",
     "ProfileLoader",
+    "AppSettings",
+    "HotkeyBinding",
+    "HotkeySettings",
+    "SettingsManager",
 ]

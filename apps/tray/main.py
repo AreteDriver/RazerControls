@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
 )
 
-from crates.profile_schema import ProfileLoader
+from crates.profile_schema import ProfileLoader, SettingsManager
 from services.openrazer_bridge import OpenRazerBridge
 
 from .hotkeys import HotkeyListener
@@ -46,6 +46,7 @@ class RazerTray(QSystemTrayIcon):
 
         self.signals = TraySignals()
         self.profile_loader = ProfileLoader()
+        self.settings_manager = SettingsManager()
         self.openrazer = OpenRazerBridge()
 
         # State
@@ -72,8 +73,10 @@ class RazerTray(QSystemTrayIcon):
         self.signals.profile_changed.connect(self._on_profile_changed)
         self.signals.hotkey_switch.connect(self._on_hotkey_switch)
 
-        # Start global hotkey listener
-        self.hotkey_listener = HotkeyListener(self._emit_hotkey_switch)
+        # Start global hotkey listener (share settings manager)
+        self.hotkey_listener = HotkeyListener(
+            self._emit_hotkey_switch, self.settings_manager
+        )
         self.hotkey_listener.start()
 
         # Show the tray icon
@@ -170,6 +173,7 @@ class RazerTray(QSystemTrayIcon):
 
         profiles = self.profile_loader.list_profiles()
         active_id = self.profile_loader.get_active_profile_id()
+        bindings = self.settings_manager.settings.hotkeys.profile_hotkeys
 
         if not profiles:
             no_profiles = self.profiles_menu.addAction("(No profiles)")
@@ -185,9 +189,12 @@ class RazerTray(QSystemTrayIcon):
             if profile_id == active_id:
                 name = f"● {name}"
 
-            # Add hotkey hint for first 9 profiles
-            if idx < 9:
-                name = f"{name}  (Ctrl+Shift+{idx + 1})"
+            # Add hotkey hint for first 9 profiles (if binding exists and is enabled)
+            if idx < len(bindings):
+                binding = bindings[idx]
+                if binding.enabled and binding.key:
+                    hotkey_str = binding.to_display_string()
+                    name = f"{name}  ({hotkey_str})"
 
             action = self.profiles_menu.addAction(name)
             action.setData(profile_id)
