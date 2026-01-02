@@ -1,6 +1,6 @@
 app-id: com.github.AreteDriver.RazerControls
 runtime: org.kde.Platform
-runtime-version: '6.7'
+runtime-version: '6.8'
 sdk: org.kde.Sdk
 command: razer-control-center
 
@@ -28,64 +28,61 @@ modules:
     buildsystem: simple
     build-commands:
       - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} "evdev>=1.6.0" --no-build-isolation
+        --prefix=${FLATPAK_DEST} evdev --no-build-isolation
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/f3/c4/7cffd66440db64ed12e168bef4a18dd4e2e8edfb31c9c22e08df55ebd09b/evdev-1.7.1.tar.gz
-        sha256: 0c72c370bda29d857e188d931019c32651a9c1ea977c05572d726c7b006be17b
+        url: https://files.pythonhosted.org/packages/63/fe/a17c106a1f4061ce83f04d14bcedcfb2c38c7793ea56bfb906a6fadae8cb/evdev-1.9.2.tar.gz
+        sha256: 5d3278892ce1f92a74d6bf888cc8525d9f68af85dbe336c95d1c87fb8f423069
 
   # Python pydbus
   - name: python3-pydbus
     buildsystem: simple
     build-commands:
       - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} "pydbus>=0.6.0" --no-build-isolation
+        --prefix=${FLATPAK_DEST} pydbus --no-build-isolation
     sources:
       - type: file
         url: https://files.pythonhosted.org/packages/58/56/3e84f2c1f2e39b9ea132460183f123af41e3b9c8befe222a35636baa6a5a/pydbus-0.6.0.tar.gz
         sha256: 4207162eff54223822c185da06c1ba8a34137a9602f3da5a528eedf3f78d0f2c
 
-  # Python pydantic
-  - name: python3-pydantic
+  # Python python-xlib (required by pynput on Linux)
+  - name: python3-xlib
     buildsystem: simple
     build-commands:
       - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} "pydantic>=2.0.0" --no-build-isolation
+        --prefix=${FLATPAK_DEST} python-xlib --no-build-isolation
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/py3/p/pydantic/pydantic-2.10.6-py3-none-any.whl
-        sha256: 427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584
-      - type: file
-        url: https://files.pythonhosted.org/packages/py3/p/pydantic_core/pydantic_core-2.27.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        sha256: 7d8f35ce72b8b7c4f0ed2d1fa1f8623f95b3c1b7b0b9f5e4b6f7a2a4e9a8b0c1d
-      - type: file
-        url: https://files.pythonhosted.org/packages/py3/a/annotated_types/annotated_types-0.7.0-py3-none-any.whl
-        sha256: 1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53
-      - type: file
-        url: https://files.pythonhosted.org/packages/py3/t/typing_extensions/typing_extensions-4.12.2-py3-none-any.whl
-        sha256: 04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d
+        url: https://files.pythonhosted.org/packages/fc/b8/ff33610932e0ee81ae7f1269c890f697d56ff74b9f5b2ee5d9b7fa2c5355/python_xlib-0.33-py2.py3-none-any.whl
+        sha256: c3534038d42e0df2f1392a1b30a15a4ff5fdc2b86cfa94f072bf11b10a164398
 
   # Python pynput
   - name: python3-pynput
     buildsystem: simple
     build-commands:
       - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} "pynput>=1.7.0" --no-build-isolation
+        --prefix=${FLATPAK_DEST} pynput --no-build-isolation
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/py2.py3/p/pynput/pynput-1.7.7-py2.py3-none-any.whl
-        sha256: d71a8859f31e73cafe66e2d0e48cfb7fa11825e243ae8f5f1c35e9785c586c2e
+        url: https://files.pythonhosted.org/packages/59/4f/ac3fa906ae8a375a536b12794128c5efacade9eaa917a35dfd27ce0c7400/pynput-1.8.1-py2.py3-none-any.whl
+        sha256: 42dfcf27404459ca16ca889c8fb8ffe42a9fe54f722fd1a3e130728e59e768d2
 
-  # Main application
+  # Main application (pydantic installed via pip from PyPI during build)
   - name: razer-control-center
     buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
     build-commands:
+      - pip3 install --verbose --prefix=${FLATPAK_DEST} pydantic
       - pip3 install --verbose --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} . --no-build-isolation
+        --prefix=${FLATPAK_DEST} . --no-build-isolation --no-deps
       - install -Dm644 packaging/flatpak/com.github.AreteDriver.RazerControls.metainfo.xml
         ${FLATPAK_DEST}/share/metainfo/com.github.AreteDriver.RazerControls.metainfo.xml
       - install -Dm644 packaging/flatpak/com.github.AreteDriver.RazerControls.desktop
         ${FLATPAK_DEST}/share/applications/com.github.AreteDriver.RazerControls.desktop
+      - install -Dm644 packaging/flatpak/icons/hicolor/scalable/apps/com.github.AreteDriver.RazerControls.svg
+        ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/com.github.AreteDriver.RazerControls.svg
     sources:
       - type: dir
         path: ../..

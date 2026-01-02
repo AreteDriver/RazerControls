@@ -43,3 +43,5 @@ ENV/
 .DS_Store
 Thumbs.db
 .coverage
+.flatpak-builder/
+build-dir/
