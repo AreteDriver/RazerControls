@@ -1,0 +1,22 @@
+#!/bin/bash
+# AppRun - Entry point for Razer Control Center AppImage
+
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+
+# Set up environment
+export PATH="${HERE}/usr/bin:${PATH}"
+export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+export PYTHONHOME="${HERE}/usr"
+export PYTHONPATH="${HERE}/usr/lib/python3/site-packages:${PYTHONPATH}"
+
+# Qt/PySide6 environment
+export QT_PLUGIN_PATH="${HERE}/usr/lib/python3/site-packages/PySide6/Qt/plugins"
+export QML2_IMPORT_PATH="${HERE}/usr/lib/python3/site-packages/PySide6/Qt/qml"
+
+# XDG paths for config
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+# Run the application
+exec "${HERE}/usr/bin/python3" -m apps.gui.main "$@"

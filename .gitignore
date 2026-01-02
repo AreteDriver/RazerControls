@@ -45,3 +45,5 @@ Thumbs.db
 .coverage
 .flatpak-builder/
 build-dir/
+build/
+dist/
