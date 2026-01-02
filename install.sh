@@ -99,15 +99,46 @@ exec python -m apps.gui.main "\$@"
 EOF
 chmod +x ~/.local/bin/razer-control-center
 
+# Create tray wrapper script
+cat > ~/.local/bin/razer-tray << EOF
+#!/bin/bash
+source "$INSTALL_DIR/.venv/bin/activate"
+exec python -m apps.tray.main "\$@"
+EOF
+chmod +x ~/.local/bin/razer-tray
+
 # Reload systemd
 systemctl --user daemon-reload
+
+# Install desktop entries
+echo
+echo "Installing desktop entries..."
+mkdir -p ~/.local/share/applications
+cp packaging/razer-control-center.desktop ~/.local/share/applications/
+cp packaging/razer-tray.desktop ~/.local/share/applications/
+
+# Install tray autostart entry
+mkdir -p ~/.config/autostart
+cp packaging/razer-tray.desktop ~/.config/autostart/
+
+# Update desktop database
+if command -v update-desktop-database &> /dev/null; then
+    update-desktop-database ~/.local/share/applications 2>/dev/null || true
+fi
+
+echo "  ✓ Desktop entries installed"
 
 echo
 echo "=== Installation Complete ==="
 echo
 echo "Commands installed:"
 echo "  razer-control-center  - Start the GUI"
+echo "  razer-tray            - Start the system tray app"
 echo "  razer-remap-daemon    - Start the remap daemon (usually via systemd)"
+echo
+echo "Desktop entries installed:"
+echo "  Razer Control Center  - Available in your applications menu"
+echo "  Razer Tray            - Starts automatically on login"
 echo
 echo "To start the daemon:"
 echo "  systemctl --user start razer-remap-daemon"

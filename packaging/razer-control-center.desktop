@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Razer Control Center
+GenericName=Gaming Device Manager
+Comment=Configure Razer devices - button remapping, macros, RGB lighting, and profiles
+Exec=razer-control-center
+Icon=input-gaming
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=razer;mouse;keyboard;gaming;macro;rgb;dpi;
+StartupNotify=true
+StartupWMClass=razer-control-center
