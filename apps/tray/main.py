@@ -7,8 +7,10 @@ Provides:
 - Desktop notifications
 """
 
+import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
@@ -138,6 +140,12 @@ class RazerTray(QSystemTrayIcon):
 
         open_config = self.menu.addAction("Open Config Folder")
         open_config.triggered.connect(self._open_config)
+
+        # Autostart toggle
+        self.autostart_action = self.menu.addAction("")
+        self.autostart_action.setCheckable(True)
+        self._update_autostart_status()
+        self.autostart_action.triggered.connect(self._toggle_autostart)
 
         self.menu.addSeparator()
 
@@ -401,6 +409,66 @@ class RazerTray(QSystemTrayIcon):
             subprocess.Popen(["xdg-open", str(config_dir)])
         except Exception as e:
             self._notify("Error", f"Failed to open folder: {e}", error=True)
+
+    def _get_autostart_path(self) -> Path:
+        """Get the autostart desktop entry path."""
+        return Path.home() / ".config" / "autostart" / "razer-tray.desktop"
+
+    def _get_source_desktop_path(self) -> Path:
+        """Get the source desktop entry path."""
+        # Check common locations
+        locations = [
+            Path(__file__).parent.parent.parent / "packaging" / "razer-tray.desktop",
+            Path.home() / ".local" / "share" / "applications" / "razer-tray.desktop",
+            Path("/usr/share/applications/razer-tray.desktop"),
+        ]
+        for loc in locations:
+            if loc.exists():
+                return loc
+        return locations[0]  # Fallback to packaging dir
+
+    def _is_autostart_enabled(self) -> bool:
+        """Check if autostart is enabled."""
+        return self._get_autostart_path().exists()
+
+    def _update_autostart_status(self) -> None:
+        """Update the autostart menu item."""
+        enabled = self._is_autostart_enabled()
+        self.autostart_action.setChecked(enabled)
+        self.autostart_action.setText("Start on Login" if not enabled else "Start on Login ✓")
+
+    def _toggle_autostart(self) -> None:
+        """Toggle autostart on/off."""
+        autostart_path = self._get_autostart_path()
+
+        if self._is_autostart_enabled():
+            # Disable autostart
+            try:
+                autostart_path.unlink()
+                self._notify("Autostart Disabled", "Tray will not start on login")
+            except Exception as e:
+                self._notify("Error", f"Failed to disable autostart: {e}", error=True)
+        else:
+            # Enable autostart
+            try:
+                autostart_path.parent.mkdir(parents=True, exist_ok=True)
+                source = self._get_source_desktop_path()
+                if source.exists():
+                    shutil.copy(source, autostart_path)
+                else:
+                    # Create minimal desktop entry
+                    autostart_path.write_text(
+                        "[Desktop Entry]\n"
+                        "Name=Razer Control Center Tray\n"
+                        "Exec=razer-tray\n"
+                        "Type=Application\n"
+                        "X-GNOME-Autostart-enabled=true\n"
+                    )
+                self._notify("Autostart Enabled", "Tray will start on login")
+            except Exception as e:
+                self._notify("Error", f"Failed to enable autostart: {e}", error=True)
+
+        self._update_autostart_status()
 
     def _check_openrazer(self) -> None:
         """Show OpenRazer status."""
