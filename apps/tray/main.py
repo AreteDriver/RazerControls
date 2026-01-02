@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Qt, QTimer, Signal
+from PySide6.QtCore import QFileSystemWatcher, QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -79,6 +79,10 @@ class RazerTray(QSystemTrayIcon):
         )
         self.hotkey_listener.start()
 
+        # Watch settings file for changes (hotkey reload on save)
+        self._settings_watcher = QFileSystemWatcher()
+        self._setup_settings_watcher()
+
         # Show the tray icon
         self.show()
 
@@ -106,6 +110,46 @@ class RazerTray(QSystemTrayIcon):
 
         self.setIcon(QIcon(pixmap))
         self.setToolTip("Razer Control Center")
+
+    def _setup_settings_watcher(self) -> None:
+        """Set up file watcher for settings changes."""
+        settings_file = str(self.settings_manager.settings_file)
+
+        # Ensure settings file exists (creates defaults if needed)
+        self.settings_manager.load()
+        if self.settings_manager.settings_file.exists():
+            self._settings_watcher.addPath(settings_file)
+            self._settings_watcher.fileChanged.connect(self._on_settings_changed)
+
+        # Also watch the directory in case file is recreated
+        settings_dir = str(self.settings_manager.config_dir)
+        if self.settings_manager.config_dir.exists():
+            self._settings_watcher.addPath(settings_dir)
+            self._settings_watcher.directoryChanged.connect(self._on_settings_dir_changed)
+
+    def _on_settings_changed(self, path: str) -> None:
+        """Handle settings file change."""
+        # Reload hotkey bindings
+        self.hotkey_listener.reload_bindings()
+
+        # Update profiles menu to show new hotkey hints
+        self._update_profiles_menu()
+
+        # Re-add the file to watcher (some editors replace the file)
+        if path not in self._settings_watcher.files():
+            if Path(path).exists():
+                self._settings_watcher.addPath(path)
+
+    def _on_settings_dir_changed(self, path: str) -> None:
+        """Handle settings directory change (file created/deleted)."""
+        settings_file = str(self.settings_manager.settings_file)
+
+        # If settings file was recreated, start watching it
+        if self.settings_manager.settings_file.exists():
+            if settings_file not in self._settings_watcher.files():
+                self._settings_watcher.addPath(settings_file)
+                # Reload since file changed
+                self._on_settings_changed(settings_file)
 
     def _create_menu(self) -> None:
         """Create the context menu."""
