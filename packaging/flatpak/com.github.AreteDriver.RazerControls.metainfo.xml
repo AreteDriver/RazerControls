@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.AreteDriver.RazerControls</id>
+  <name>Razer Control Center</name>
+  <summary>Configure Razer devices on Linux</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="com.github.aretedriver">
+    <name>AreteDriver</name>
+  </developer>
+
+  <description>
+    <p>
+      A Synapse-like control center for Razer devices on Linux. Configure button
+      remapping, macros, RGB lighting, and DPI settings.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Button remapping - Remap mouse buttons and keyboard keys</li>
+      <li>Macro support - Create and execute macro sequences</li>
+      <li>Multi-layer bindings - Support for Hypershift-like hold modifiers</li>
+      <li>Profile management - Multiple profiles with per-application switching</li>
+      <li>OpenRazer integration - Control RGB lighting, brightness, and DPI</li>
+      <li>Global hotkeys - Switch profiles with Ctrl+Shift+1-9</li>
+      <li>System tray - Quick access and notifications</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.github.AreteDriver.RazerControls.desktop</launchable>
+
+  <url type="homepage">https://github.com/AreteDriver/Razer_Controls</url>
+  <url type="bugtracker">https://github.com/AreteDriver/Razer_Controls/issues</url>
+  <url type="vcs-browser">https://github.com/AreteDriver/Razer_Controls</url>
+
+  <provides>
+    <binary>razer-control-center</binary>
+    <binary>razer-tray</binary>
+  </provides>
+
+  <requires>
+    <display_length compare="ge">800</display_length>
+  </requires>
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+
+  <categories>
+    <category>Settings</category>
+    <category>HardwareSettings</category>
+  </categories>
+
+  <keywords>
+    <keyword>razer</keyword>
+    <keyword>mouse</keyword>
+    <keyword>keyboard</keyword>
+    <keyword>gaming</keyword>
+    <keyword>macro</keyword>
+    <keyword>rgb</keyword>
+    <keyword>dpi</keyword>
+    <keyword>openrazer</keyword>
+  </keywords>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window with profile and binding configuration</caption>
+      <image>https://raw.githubusercontent.com/AreteDriver/Razer_Controls/main/screenshots/main-window.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.4.4" date="2026-01-01">
+      <description>
+        <p>Global hotkeys for profile switching</p>
+        <ul>
+          <li>Ctrl+Shift+1-9 to switch profiles by position</li>
+          <li>Hotkey hints displayed in tray menu</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.4.3" date="2026-01-01">
+      <description>
+        <p>First-run wizard and profile export/import</p>
+        <ul>
+          <li>4-step setup wizard for new users</li>
+          <li>Profile export/import in tray and CLI</li>
+          <li>Help menu with About dialog</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.4.2" date="2026-01-01">
+      <description>
+        <p>Tray improvements</p>
+        <ul>
+          <li>Autostart toggle in tray menu</li>
+          <li>Desktop entries for application menu</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+</component>
