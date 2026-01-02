@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "razer-control-center"
-version = "1.4.2"
+version = "1.4.3"
 description = "Razer device control center for Linux - button remapping, macros, RGB, and profiles"
 readme = "README.md"
 requires-python = ">=3.10"
