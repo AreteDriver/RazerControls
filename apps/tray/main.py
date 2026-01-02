@@ -25,6 +25,8 @@ from PySide6.QtWidgets import (
 from crates.profile_schema import ProfileLoader
 from services.openrazer_bridge import OpenRazerBridge
 
+from .hotkeys import HotkeyListener
+
 
 class TraySignals(QObject):
     """Signals for cross-thread communication."""
@@ -33,6 +35,7 @@ class TraySignals(QObject):
     daemon_status_changed = Signal(bool)
     device_connected = Signal(str)
     device_disconnected = Signal(str)
+    hotkey_switch = Signal(int)  # Profile index from hotkey
 
 
 class RazerTray(QSystemTrayIcon):
@@ -67,6 +70,11 @@ class RazerTray(QSystemTrayIcon):
         # Connect signals
         self.activated.connect(self._on_activated)
         self.signals.profile_changed.connect(self._on_profile_changed)
+        self.signals.hotkey_switch.connect(self._on_hotkey_switch)
+
+        # Start global hotkey listener
+        self.hotkey_listener = HotkeyListener(self._emit_hotkey_switch)
+        self.hotkey_listener.start()
 
         # Show the tray icon
         self.show()
@@ -168,7 +176,7 @@ class RazerTray(QSystemTrayIcon):
             no_profiles.setEnabled(False)
             return
 
-        for profile_id in profiles:
+        for idx, profile_id in enumerate(profiles):
             profile = self.profile_loader.load_profile(profile_id)
             if not profile:
                 continue
@@ -176,6 +184,10 @@ class RazerTray(QSystemTrayIcon):
             name = profile.name
             if profile_id == active_id:
                 name = f"● {name}"
+
+            # Add hotkey hint for first 9 profiles
+            if idx < 9:
+                name = f"{name}  (Ctrl+Shift+{idx + 1})"
 
             action = self.profiles_menu.addAction(name)
             action.setData(profile_id)
@@ -605,9 +617,21 @@ class RazerTray(QSystemTrayIcon):
         self._active_profile = profile_id
         self._update_profile_display()
 
+    def _emit_hotkey_switch(self, index: int) -> None:
+        """Emit hotkey switch signal (called from background thread)."""
+        self.signals.hotkey_switch.emit(index)
+
+    def _on_hotkey_switch(self, index: int) -> None:
+        """Handle hotkey profile switch (runs on main thread)."""
+        profiles = self.profile_loader.list_profiles()
+        if 0 <= index < len(profiles):
+            profile_id = profiles[index]
+            self._switch_profile(profile_id)
+
     def _quit(self) -> None:
         """Quit the tray application."""
         self._status_timer.stop()
+        self.hotkey_listener.stop()
         QApplication.quit()
 
 

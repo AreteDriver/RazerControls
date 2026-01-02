@@ -32,6 +32,7 @@ dependencies = [
     "pydbus>=0.6.0",
     "PySide6>=6.5.0",
     "pydantic>=2.0.0",
+    "pynput>=1.7.0",
 ]
 
 [project.optional-dependencies]
