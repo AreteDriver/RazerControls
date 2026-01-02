@@ -164,6 +164,17 @@ class RazerTray(QSystemTrayIcon):
         self.profile_label = self.menu.addAction("Profile: (loading...)")
         self.profile_label.setEnabled(False)
 
+        # Hotkey backend status
+        backend = self.hotkey_listener.backend_name
+        if backend == "PortalGlobalShortcuts":
+            backend_text = "Hotkeys: Portal (Wayland)"
+        elif backend == "X11Hotkeys":
+            backend_text = "Hotkeys: X11 (pynput)"
+        else:
+            backend_text = "Hotkeys: Disabled"
+        self.hotkey_status = self.menu.addAction(backend_text)
+        self.hotkey_status.setEnabled(False)
+
         # Profiles submenu
         self.profiles_menu = self.menu.addMenu("Switch Profile")
         self._update_profiles_menu()
