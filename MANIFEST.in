@@ -1,0 +1,46 @@
+# Include documentation
+include README.md
+include CHANGELOG.md
+include LICENSE
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+
+# Include configuration files
+include pyproject.toml
+
+# Include all source code (flat layout)
+recursive-include apps *.py
+recursive-include services *.py
+recursive-include crates *.py
+recursive-include tools *.py
+
+# Include resource files
+recursive-include apps *.json *.yaml *.yml *.png *.svg *.qss
+recursive-include services *.json *.yaml *.yml
+recursive-include crates *.json *.yaml *.yml
+
+# Include packaging files
+recursive-include packaging *
+
+# Include documentation
+recursive-include docs *
+
+# Include tests
+recursive-include tests *.py
+
+# Exclude compiled files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+
+# Exclude development files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+recursive-exclude .github *
+recursive-exclude .venv *
+recursive-exclude .pytest_cache *
+recursive-exclude .mypy_cache *
+recursive-exclude .ruff_cache *
+recursive-exclude build-dir *
