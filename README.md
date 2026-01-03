@@ -28,13 +28,14 @@ A Synapse-like control center for Razer devices on Linux. Configure button remap
 
 ## Installation
 
-### 1. Install OpenRazer
+### 1. Install System Dependencies
 
 ```bash
 # Ubuntu/Debian
 sudo add-apt-repository ppa:openrazer/stable
 sudo apt update
-sudo apt install openrazer-daemon openrazer-driver-dkms
+sudo apt install openrazer-daemon openrazer-driver-dkms \
+    libgirepository1.0-dev gir1.2-gtk-3.0 python3-gi
 
 # Add yourself to the plugdev group
 sudo gpasswd -a $USER plugdev
@@ -42,6 +43,12 @@ sudo gpasswd -a $USER plugdev
 
 ### 2. Install Razer Control Center
 
+**Option A: Via pipx (recommended)**
+```bash
+pipx install razer-control-center
+```
+
+**Option B: From source**
 ```bash
 cd ~/projects/Razer_Controls
 ./install.sh
