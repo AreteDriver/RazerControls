@@ -75,6 +75,38 @@ class Layer(BaseModel):
     )
 
 
+class ZoneColor(BaseModel):
+    """Color assignment for a lighting zone."""
+
+    zone_id: str = Field(..., description="Zone identifier (e.g., 'wasd', 'function_row')")
+    color: tuple[int, int, int] = Field(..., description="RGB color tuple")
+
+
+class KeyColor(BaseModel):
+    """Color for a specific key position in the matrix."""
+
+    row: int = Field(..., ge=0, description="Row index (0-based)")
+    col: int = Field(..., ge=0, description="Column index (0-based)")
+    color: tuple[int, int, int] = Field(..., description="RGB color tuple")
+
+
+class MatrixLightingConfig(BaseModel):
+    """Per-key/matrix lighting configuration."""
+
+    enabled: bool = Field(default=False, description="Whether matrix mode is active")
+
+    # Zone-based colors (used by zone editor)
+    zones: list[ZoneColor] = Field(default_factory=list)
+
+    # Per-key colors (for visual keyboard editor, future)
+    keys: list[KeyColor] = Field(default_factory=list)
+
+    # Default color for keys not explicitly set
+    default_color: tuple[int, int, int] = Field(
+        default=(0, 0, 0), description="Fallback color for unset keys"
+    )
+
+
 class LightingConfig(BaseModel):
     """Lighting configuration for a device."""
 
@@ -82,6 +114,11 @@ class LightingConfig(BaseModel):
     brightness: int = Field(default=100, ge=0, le=100)
     color: tuple[int, int, int] = Field(default=(0, 255, 0), description="RGB tuple")
     speed: int = Field(default=50, ge=0, le=100, description="Effect speed")
+
+    # Matrix/per-key lighting (optional)
+    matrix: MatrixLightingConfig | None = Field(
+        default=None, description="Per-key RGB configuration"
+    )
 
 
 class DPIConfig(BaseModel):

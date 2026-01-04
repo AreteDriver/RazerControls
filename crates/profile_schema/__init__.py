@@ -6,13 +6,16 @@ from .schema import (
     Binding,
     DeviceConfig,
     DPIConfig,
+    KeyColor,
     Layer,
     LightingConfig,
     LightingEffect,
     MacroAction,
     MacroStep,
     MacroStepType,
+    MatrixLightingConfig,
     Profile,
+    ZoneColor,
 )
 from .settings import AppSettings, HotkeyBinding, HotkeySettings, SettingsManager
 
@@ -25,6 +28,9 @@ __all__ = [
     "DeviceConfig",
     "LightingConfig",
     "DPIConfig",
+    "MatrixLightingConfig",
+    "ZoneColor",
+    "KeyColor",
     "ActionType",
     "MacroStepType",
     "LightingEffect",

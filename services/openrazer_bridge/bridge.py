@@ -53,6 +53,11 @@ class RazerDevice:
     has_poll_rate: bool = False
     has_logo: bool = False
     has_scroll: bool = False
+    has_matrix: bool = False
+
+    # Matrix dimensions (for per-key RGB)
+    matrix_rows: int = 0
+    matrix_cols: int = 0
 
     # Supported lighting effects
     supported_effects: list[str] = field(default_factory=list)
@@ -236,6 +241,16 @@ class OpenRazerBridge:
         try:
             dbus_dev.getScrollActive()
             device.has_scroll = True
+        except Exception:
+            pass
+
+        # Check for matrix (per-key RGB) support
+        try:
+            dims = dbus_dev.getMatrixDimensions()
+            if dims and len(dims) >= 2 and dims[0] > 0 and dims[1] > 0:
+                device.has_matrix = True
+                device.matrix_rows = int(dims[0])
+                device.matrix_cols = int(dims[1])
         except Exception:
             pass
 
@@ -559,6 +574,99 @@ class OpenRazerBridge:
             print(f"Error setting scroll color: {e}")
             return False
 
+    # --- Matrix (Per-Key RGB) Methods ---
+
+    def set_key_row(self, serial: str, row: int, colors: list[tuple[int, int, int]]) -> bool:
+        """Set RGB colors for an entire row of keys.
+
+        Args:
+            serial: Device serial number
+            row: Row index (0-based)
+            colors: List of (R, G, B) tuples for each column in the row
+
+        Returns:
+            True if successful
+        """
+        device = self.get_device(serial)
+        if not device or not device.has_matrix:
+            return False
+
+        if row < 0 or row >= device.matrix_rows:
+            return False
+
+        try:
+            dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
+
+            # Build payload: row_index followed by RGB triplets
+            # Format: [row, R1, G1, B1, R2, G2, B2, ...]
+            payload = bytes([row])
+            for r, g, b in colors:
+                payload += bytes([r & 0xFF, g & 0xFF, b & 0xFF])
+
+            dev.setKeyRow(payload)
+            return True
+        except Exception as e:
+            print(f"Error setting key row: {e}")
+            return False
+
+    def set_custom_frame(self, serial: str) -> bool:
+        """Apply the custom frame buffer to the device.
+
+        Call this after setting key rows to make colors visible.
+        """
+        device = self.get_device(serial)
+        if not device or not device.has_matrix:
+            return False
+
+        try:
+            dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
+            dev.setCustom()
+            return True
+        except Exception as e:
+            print(f"Error setting custom frame: {e}")
+            return False
+
+    def set_matrix_colors(
+        self, serial: str, matrix: list[list[tuple[int, int, int]]]
+    ) -> bool:
+        """Set the entire matrix of colors and apply.
+
+        Args:
+            serial: Device serial number
+            matrix: 2D list of (R, G, B) tuples indexed as [row][col]
+
+        Returns:
+            True if successful
+        """
+        device = self.get_device(serial)
+        if not device or not device.has_matrix:
+            return False
+
+        # Send each row
+        for row_idx, row_colors in enumerate(matrix):
+            # Pad or truncate row to match device columns
+            padded = list(row_colors)
+            while len(padded) < device.matrix_cols:
+                padded.append((0, 0, 0))
+            padded = padded[: device.matrix_cols]
+
+            if not self.set_key_row(serial, row_idx, padded):
+                return False
+
+        # Apply the custom frame
+        return self.set_custom_frame(serial)
+
+    def get_matrix_dimensions(self, serial: str) -> tuple[int, int] | None:
+        """Get the matrix dimensions for a device.
+
+        Returns:
+            Tuple of (rows, cols) or None if not a matrix device
+        """
+        device = self.get_device(serial)
+        if not device or not device.has_matrix:
+            return None
+        return (device.matrix_rows, device.matrix_cols)
+
     def refresh_device(self, serial: str) -> RazerDevice | None:
         """Refresh device state from hardware."""
         device = self.get_device(serial)
@@ -606,6 +714,9 @@ def main():
         print(f"  Battery: {dev.has_battery}")
         if dev.has_battery:
             print(f"    Level: {dev.battery_level}%")
+        print(f"  Matrix: {dev.has_matrix}")
+        if dev.has_matrix:
+            print(f"    Dimensions: {dev.matrix_rows}x{dev.matrix_cols}")
 
 
 if __name__ == "__main__":
