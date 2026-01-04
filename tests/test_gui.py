@@ -3,7 +3,7 @@
 import ast
 import os
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -91,26 +91,26 @@ class TestGUIWidgetStructure:
 
     def test_binding_editor_structure(self):
         """Test binding_editor module structure."""
-        from apps.gui.widgets.binding_editor import BindingEditorWidget
-
         # Verify it's a QWidget subclass
         from PySide6.QtWidgets import QWidget
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
 
         assert issubclass(BindingEditorWidget, QWidget)
 
     def test_profile_panel_structure(self):
         """Test profile_panel module structure."""
-        from apps.gui.widgets.profile_panel import ProfilePanel
-
         from PySide6.QtWidgets import QWidget
+
+        from apps.gui.widgets.profile_panel import ProfilePanel
 
         assert issubclass(ProfilePanel, QWidget)
 
     def test_setup_wizard_structure(self):
         """Test setup_wizard module structure."""
-        from apps.gui.widgets.setup_wizard import SetupWizard
-
         from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.setup_wizard import SetupWizard
 
         assert issubclass(SetupWizard, QDialog)
 
@@ -478,7 +478,7 @@ class TestProfilePanelMethods:
     def test_load_with_profiles(self, qapp, mock_loader):
         """Test load with existing profiles."""
         from apps.gui.widgets.profile_panel import ProfilePanel
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         profile = Profile(
             id="test", name="Test", description="",
@@ -602,7 +602,7 @@ class TestBindingEditorMethods:
     def test_load_profile(self, qapp):
         """Test loading a profile."""
         from apps.gui.widgets.binding_editor import BindingEditorWidget
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         widget = BindingEditorWidget()
         profile = Profile(
@@ -616,7 +616,7 @@ class TestBindingEditorMethods:
     def test_get_layers(self, qapp):
         """Test getting layers."""
         from apps.gui.widgets.binding_editor import BindingEditorWidget
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         widget = BindingEditorWidget()
         profile = Profile(
@@ -640,7 +640,7 @@ class TestBindingEditorMethods:
     def test_clear(self, qapp):
         """Test clearing the editor."""
         from apps.gui.widgets.binding_editor import BindingEditorWidget
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         widget = BindingEditorWidget()
         profile = Profile(
@@ -668,7 +668,7 @@ class TestAppMatcherMethods:
     def test_load_profile(self, qapp):
         """Test loading a profile."""
         from apps.gui.widgets.app_matcher import AppMatcherWidget
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         widget = AppMatcherWidget()
         profile = Profile(
@@ -683,7 +683,7 @@ class TestAppMatcherMethods:
     def test_clear(self, qapp):
         """Test clearing the widget."""
         from apps.gui.widgets.app_matcher import AppMatcherWidget
-        from crates.profile_schema import Profile, Layer
+        from crates.profile_schema import Layer, Profile
 
         widget = AppMatcherWidget()
         profile = Profile(

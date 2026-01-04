@@ -15,13 +15,16 @@ from tools.profile_cli import (
     cmd_activate,
     cmd_copy,
     cmd_delete,
+    cmd_devices,
     cmd_export,
+    cmd_export_all,
     cmd_import,
     cmd_list,
     cmd_new,
     cmd_show,
     cmd_validate,
     get_loader,
+    main,
 )
 
 
@@ -736,3 +739,610 @@ class TestCmdValidate:
         output = mock_out.getvalue()
         assert "Warnings:" in output
         assert "No input devices" in output
+
+
+from unittest.mock import MagicMock
+
+from crates.profile_schema.schema import MacroAction, MacroStep, MacroStepType
+
+
+class TestCmdListWithDefault:
+    """Tests for cmd_list with default profiles (lines 61-62)."""
+
+    def test_list_shows_default_status(self, temp_config):
+        """Test listing shows default status for non-active default profile."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="default",
+            name="Default Profile",
+            input_devices=[],
+            layers=[],
+            is_default=True,
+        )
+        loader.save_profile(profile)
+        # Don't set as active
+
+        args = argparse.Namespace(config_dir=config_dir)
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_list(args)
+
+        assert result == 0
+        assert "[default]" in mock_out.getvalue()
+
+
+class TestCmdShowBranches:
+    """Tests for cmd_show various display branches."""
+
+    def test_show_no_input_devices(self, temp_config):
+        """Test showing profile with no input devices (line 96)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="no-devices",
+            name="No Devices",
+            input_devices=[],
+            layers=[],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="no-devices")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_show(args)
+
+        assert result == 0
+        assert "(none configured)" in mock_out.getvalue()
+
+    def test_show_macro_binding(self, temp_config):
+        """Test showing profile with macro binding (lines 111-114)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="macro-profile",
+            name="Macro Profile",
+            input_devices=["test-device"],
+            layers=[
+                Layer(
+                    id="base",
+                    name="Base",
+                    bindings=[
+                        Binding(
+                            input_code="BTN_SIDE",
+                            action_type=ActionType.MACRO,
+                            macro_id="test-macro",
+                        ),
+                    ],
+                ),
+            ],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="macro-profile")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_show(args)
+
+        assert result == 0
+        assert "macro:test-macro" in mock_out.getvalue()
+
+    def test_show_no_bindings(self, temp_config):
+        """Test showing layer with no bindings (line 117)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="empty-layer",
+            name="Empty Layer",
+            input_devices=["test-device"],
+            layers=[
+                Layer(id="base", name="Base", bindings=[]),
+            ],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="empty-layer")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_show(args)
+
+        assert result == 0
+        assert "(no bindings)" in mock_out.getvalue()
+
+    def test_show_with_macros(self, temp_config):
+        """Test showing profile with macros (lines 121-123)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="with-macros",
+            name="With Macros",
+            input_devices=[],
+            layers=[],
+            macros=[
+                MacroAction(
+                    id="test-macro",
+                    name="Test Macro",
+                    steps=[MacroStep(type=MacroStepType.KEY_PRESS, key="A")],
+                ),
+            ],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="with-macros")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_show(args)
+
+        assert result == 0
+        output = mock_out.getvalue()
+        assert "Macros (1)" in output
+        assert "test-macro" in output
+
+    def test_show_with_process_matching(self, temp_config):
+        """Test showing profile with process matching (lines 127-129)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="process-match",
+            name="Process Match",
+            input_devices=[],
+            layers=[],
+            match_process_names=["firefox", "chrome"],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="process-match")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_show(args)
+
+        assert result == 0
+        output = mock_out.getvalue()
+        assert "Auto-activate for processes" in output
+        assert "firefox" in output
+
+
+class TestCmdNewBranches:
+    """Tests for cmd_new edge cases."""
+
+    def test_new_with_auto_detect(self, temp_config):
+        """Test creating profile with auto-detect (lines 151-156)."""
+        config_dir, _ = temp_config
+
+        mock_device = MagicMock()
+        mock_device.stable_id = "razer-mouse-1"
+        mock_device.is_mouse = True
+
+        mock_registry = MagicMock()
+        mock_registry.get_razer_devices.return_value = [mock_device]
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            name="Auto Detect",
+            description=None,
+            activate=False,
+            default=False,
+            auto_detect=True,
+        )
+
+        with patch("tools.profile_cli.DeviceRegistry", return_value=mock_registry):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_new(args)
+
+        assert result == 0
+        assert "Auto-detected device" in mock_out.getvalue()
+
+    def test_new_save_failure(self, temp_config):
+        """Test creating profile when save fails (lines 179-180)."""
+        config_dir, loader = temp_config
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            name="Test",
+            description=None,
+            activate=False,
+            default=False,
+            auto_detect=False,
+        )
+
+        with patch.object(loader, "save_profile", return_value=False):
+            with patch("tools.profile_cli.get_loader", return_value=loader):
+                with patch("sys.stdout", new=StringIO()) as mock_out:
+                    result = cmd_new(args)
+
+        assert result == 1
+        assert "Failed to save profile" in mock_out.getvalue()
+
+
+class TestCmdDeleteBranches:
+    """Tests for cmd_delete edge cases."""
+
+    def test_delete_active_profile_warning(self, temp_config, sample_profile):
+        """Test deleting active profile shows warning (line 224)."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+        loader.set_active_profile(sample_profile.id)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="test-profile", force=True)
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_delete(args)
+
+        assert result == 0
+        assert "Warning: Deleting the active profile" in mock_out.getvalue()
+
+    def test_delete_failure(self, temp_config, sample_profile):
+        """Test deleting profile when delete fails (lines 230-231)."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="test-profile", force=True)
+
+        with patch.object(loader, "delete_profile", return_value=False):
+            with patch("tools.profile_cli.get_loader", return_value=loader):
+                with patch("sys.stdout", new=StringIO()) as mock_out:
+                    result = cmd_delete(args)
+
+        assert result == 1
+        assert "Failed to delete profile" in mock_out.getvalue()
+
+
+class TestCmdCopyBranches:
+    """Tests for cmd_copy edge cases."""
+
+    def test_copy_failure(self, temp_config, sample_profile):
+        """Test copying profile when save fails (lines 261-262)."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            source_id="test-profile",
+            dest_id="new-profile",
+            name=None,
+        )
+
+        # Create a mock loader that returns the real profile but fails to save the copy
+        mock_loader = MagicMock()
+        mock_loader.load_profile.side_effect = lambda pid: sample_profile if pid == "test-profile" else None
+        mock_loader.save_profile.return_value = False
+
+        with patch("tools.profile_cli.get_loader", return_value=mock_loader):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_copy(args)
+
+        assert result == 1
+        assert "Failed to save copied profile" in mock_out.getvalue()
+
+
+class TestCmdExportAll:
+    """Tests for cmd_export_all function (lines 334-383)."""
+
+    def test_export_all_no_profiles(self, temp_config):
+        """Test export-all when no profiles exist."""
+        config_dir, _ = temp_config
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            output="/tmp/test",
+            zip=False,
+            format="json",
+            no_metadata=False,
+        )
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_export_all(args)
+
+        assert result == 1
+        assert "No profiles to export" in mock_out.getvalue()
+
+    def test_export_all_to_directory(self, temp_config, sample_profile):
+        """Test export-all to directory."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "exports"
+
+            args = argparse.Namespace(
+                config_dir=config_dir,
+                output=str(output_dir),
+                zip=False,
+                format="json",
+                no_metadata=False,
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_export_all(args)
+
+            assert result == 0
+            assert output_dir.exists()
+            assert (output_dir / "test-profile.json").exists()
+
+    def test_export_all_as_zip(self, temp_config, sample_profile):
+        """Test export-all as zip file."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "backup.zip"
+
+            args = argparse.Namespace(
+                config_dir=config_dir,
+                output=str(output_path),
+                zip=True,
+                format="json",
+                no_metadata=False,
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_export_all(args)
+
+            assert result == 0
+            assert output_path.exists()
+
+    def test_export_all_zip_to_directory(self, temp_config, sample_profile):
+        """Test export-all as zip to directory (auto-generates filename)."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            args = argparse.Namespace(
+                config_dir=config_dir,
+                output=tmpdir,
+                zip=True,
+                format="yaml",
+                no_metadata=False,
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_export_all(args)
+
+            assert result == 0
+            # Should have created a zip file with timestamp
+            zip_files = list(Path(tmpdir).glob("razer_profiles_*.zip"))
+            assert len(zip_files) == 1
+
+
+class TestCmdImportBranches:
+    """Tests for cmd_import edge cases."""
+
+    def test_import_from_stdin(self, temp_config):
+        """Test importing from stdin (lines 393-402)."""
+        config_dir, _ = temp_config
+
+        profile_data = {
+            "id": "stdin-profile",
+            "name": "Stdin Profile",
+            "input_devices": [],
+            "layers": [],
+        }
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            file="-",
+            force=False,
+            new_id=None,
+        )
+
+        with patch("sys.stdin.read", return_value=json.dumps(profile_data)):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_import(args)
+
+        assert result == 0
+        assert "Imported profile: stdin-profile" in mock_out.getvalue()
+
+    def test_import_stdin_wrapped_format(self, temp_config):
+        """Test importing wrapped format from stdin."""
+        config_dir, _ = temp_config
+
+        wrapped_data = {
+            "_export": {"version": "1.0"},
+            "profile": {
+                "id": "wrapped-stdin",
+                "name": "Wrapped",
+                "input_devices": [],
+                "layers": [],
+            },
+        }
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            file="-",
+            force=False,
+            new_id=None,
+        )
+
+        with patch("sys.stdin.read", return_value=json.dumps(wrapped_data)):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_import(args)
+
+        assert result == 0
+
+    def test_import_save_failure(self, temp_config):
+        """Test importing when save fails (lines 433-434)."""
+        config_dir, loader = temp_config
+
+        profile_data = {
+            "id": "fail-save",
+            "name": "Fail Save",
+            "input_devices": [],
+            "layers": [],
+        }
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(profile_data, f)
+            f.flush()
+
+            args = argparse.Namespace(
+                config_dir=config_dir,
+                file=f.name,
+                force=False,
+                new_id=None,
+            )
+
+            with patch.object(loader, "save_profile", return_value=False):
+                with patch("tools.profile_cli.get_loader", return_value=loader):
+                    with patch("sys.stdout", new=StringIO()) as mock_out:
+                        result = cmd_import(args)
+
+            assert result == 1
+            assert "Failed to save profile" in mock_out.getvalue()
+
+
+class TestCmdValidateBranches:
+    """Tests for cmd_validate edge cases."""
+
+    def test_validate_macro_not_found(self, temp_config):
+        """Test validation catches missing macro reference (lines 474-476)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="bad-macro-ref",
+            name="Bad Macro Ref",
+            input_devices=["test"],
+            layers=[
+                Layer(
+                    id="base",
+                    name="Base",
+                    bindings=[
+                        Binding(
+                            input_code="BTN_SIDE",
+                            action_type=ActionType.MACRO,
+                            macro_id="nonexistent-macro",
+                        ),
+                    ],
+                ),
+            ],
+            macros=[],  # No macros defined
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="bad-macro-ref")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_validate(args)
+
+        assert result == 1
+        assert "macro 'nonexistent-macro' not found" in mock_out.getvalue()
+
+    def test_validate_hold_modifier_invalid(self, temp_config):
+        """Test validation catches invalid hold modifier (lines 480-482)."""
+        config_dir, loader = temp_config
+
+        profile = Profile(
+            id="bad-modifier",
+            name="Bad Modifier",
+            input_devices=["test"],
+            layers=[
+                Layer(
+                    id="shift",
+                    name="Shift Layer",
+                    bindings=[],
+                    hold_modifier_input_code="INVALID_KEY_XYZ",
+                ),
+            ],
+        )
+        loader.save_profile(profile)
+
+        args = argparse.Namespace(config_dir=config_dir, profile_id="bad-modifier")
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_validate(args)
+
+        assert result == 1
+        assert "hold modifier" in mock_out.getvalue()
+
+
+class TestCmdDevices:
+    """Tests for cmd_devices function (lines 504-533)."""
+
+    def test_devices_no_razer(self, temp_config):
+        """Test listing devices when no Razer devices found."""
+        config_dir, _ = temp_config
+
+        mock_device = MagicMock()
+        mock_device.stable_id = "generic-mouse"
+
+        mock_registry = MagicMock()
+        mock_registry.scan_devices.return_value = [mock_device]
+
+        args = argparse.Namespace(config_dir=config_dir)
+
+        with patch("tools.profile_cli.DeviceRegistry", return_value=mock_registry):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_devices(args)
+
+        assert result == 0
+        assert "No Razer devices found" in mock_out.getvalue()
+
+    def test_devices_with_razer(self, temp_config):
+        """Test listing Razer devices."""
+        config_dir, _ = temp_config
+
+        mock_device = MagicMock()
+        mock_device.stable_id = "usb-Razer_Mouse-event"
+        mock_device.name = "Razer Mouse"
+        mock_device.is_mouse = True
+        mock_device.is_keyboard = False
+        mock_device.event_path = "/dev/input/event5"
+
+        mock_registry = MagicMock()
+        mock_registry.scan_devices.return_value = [mock_device]
+
+        args = argparse.Namespace(config_dir=config_dir)
+
+        with patch("tools.profile_cli.DeviceRegistry", return_value=mock_registry):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_devices(args)
+
+        assert result == 0
+        output = mock_out.getvalue()
+        assert "Razer Devices" in output
+        assert "mouse" in output
+
+
+class TestMain:
+    """Tests for main function (lines 537-653)."""
+
+    def test_main_no_command(self):
+        """Test main with no command shows help."""
+        with patch("sys.argv", ["razer-profile"]):
+            with patch("sys.stdout", new=StringIO()):
+                result = main()
+
+        assert result == 0
+
+    def test_main_list_command(self, temp_config):
+        """Test main with list command."""
+        config_dir, _ = temp_config
+
+        with patch("sys.argv", ["razer-profile", "--config-dir", str(config_dir), "list"]):
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = main()
+
+        assert result == 0
+
+
+class TestMainGuard:
+    """Tests for __name__ == '__main__' guard."""
+
+    def test_main_guard_exists(self):
+        """Test that main guard exists in source."""
+        import ast
+
+        source_path = Path(__file__).parent.parent / "tools" / "profile_cli.py"
+        tree = ast.parse(source_path.read_text())
+
+        has_main_guard = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.If):
+                if (
+                    isinstance(node.test, ast.Compare)
+                    and isinstance(node.test.left, ast.Name)
+                    and node.test.left.id == "__name__"
+                ):
+                    has_main_guard = True
+                    break
+
+        assert has_main_guard, "main guard not found"

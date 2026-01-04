@@ -2,22 +2,21 @@
 
 import pytest
 
+from crates.profile_schema import (
+    KeyColor,
+    LightingConfig,
+    MatrixLightingConfig,
+    ZoneColor,
+)
 from crates.zone_definitions import (
+    STANDARD_KEYBOARD_ZONES,
     KeyboardLayout,
     KeyPosition,
     Zone,
     ZoneType,
     get_layout_for_device,
     get_zones_for_preset,
-    STANDARD_KEYBOARD_ZONES,
 )
-from crates.profile_schema import (
-    MatrixLightingConfig,
-    ZoneColor,
-    KeyColor,
-    LightingConfig,
-)
-
 
 # --- Zone Definitions Tests ---
 

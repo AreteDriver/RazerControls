@@ -337,6 +337,7 @@ class TestEdgeCases:
     def test_evdev_event_to_schema_list_code_name(self):
         """Test evdev_event_to_schema when code_name is a list."""
         from unittest.mock import patch
+
         import crates.keycode_map.mapping as mapping_module
 
         # Mock the ecodes module's BTN dict to return a list
@@ -409,6 +410,7 @@ class TestEdgeCases:
     def test_schema_to_evdev_code_getattr_path(self):
         """Test schema_to_evdev_code hits getattr code path."""
         from unittest.mock import patch
+
         import crates.keycode_map.mapping as mapping_module
 
         # Mock SCHEMA_TO_UINPUT to not contain our test key
@@ -422,6 +424,7 @@ class TestEdgeCases:
     def test_is_valid_key_schema_to_evdev_path(self):
         """Test is_valid_key hits SCHEMA_TO_EVDEV check."""
         from unittest.mock import patch
+
         import crates.keycode_map.mapping as mapping_module
 
         # Create a scenario where key is in SCHEMA_TO_EVDEV but not SCHEMA_TO_UINPUT
@@ -433,6 +436,7 @@ class TestEdgeCases:
     def test_validate_key_no_suggestions_path(self):
         """Test validate_key returns --list message when no suggestions."""
         from unittest.mock import patch
+
         import crates.keycode_map.mapping as mapping_module
 
         # Mock get_all_schema_keys to return empty list (no suggestions possible)
