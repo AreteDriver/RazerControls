@@ -338,7 +338,13 @@ class TestCmdExport:
     def test_export_not_found(self, temp_config):
         """Test exporting a profile that doesn't exist."""
         config_dir, _ = temp_config
-        args = argparse.Namespace(config_dir=config_dir, profile_id="nonexistent")
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="nonexistent",
+            output=None,
+            format=None,
+            no_metadata=False,
+        )
 
         with patch("sys.stderr", new=StringIO()) as mock_err:
             result = cmd_export(args)
@@ -346,12 +352,18 @@ class TestCmdExport:
         assert result == 1
         assert "not found" in mock_err.getvalue()
 
-    def test_export_profile(self, temp_config, sample_profile):
-        """Test exporting a profile."""
+    def test_export_profile_with_metadata(self, temp_config, sample_profile):
+        """Test exporting a profile includes metadata by default."""
         config_dir, loader = temp_config
         loader.save_profile(sample_profile)
 
-        args = argparse.Namespace(config_dir=config_dir, profile_id="test-profile")
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="test-profile",
+            output=None,
+            format=None,
+            no_metadata=False,
+        )
 
         with patch("sys.stdout", new=StringIO()) as mock_out:
             result = cmd_export(args)
@@ -359,10 +371,118 @@ class TestCmdExport:
         assert result == 0
         output = mock_out.getvalue()
 
-        # Should be valid JSON
+        # Should be valid JSON with metadata wrapper
         data = json.loads(output)
+        assert "_export" in data
+        assert data["_export"]["version"] == "1.0"
+        assert "exported_at" in data["_export"]
+        assert data["profile"]["id"] == "test-profile"
+        assert data["profile"]["name"] == "Test Profile"
+
+    def test_export_profile_no_metadata(self, temp_config, sample_profile):
+        """Test exporting without metadata."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="test-profile",
+            output=None,
+            format=None,
+            no_metadata=True,
+        )
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_export(args)
+
+        assert result == 0
+        output = mock_out.getvalue()
+
+        # Should be plain profile without wrapper
+        data = json.loads(output)
+        assert "_export" not in data
         assert data["id"] == "test-profile"
         assert data["name"] == "Test Profile"
+
+    def test_export_yaml_format(self, temp_config, sample_profile):
+        """Test exporting in YAML format."""
+        import yaml
+
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="test-profile",
+            output=None,
+            format="yaml",
+            no_metadata=False,
+        )
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_export(args)
+
+        assert result == 0
+        output = mock_out.getvalue()
+
+        # Should be valid YAML
+        data = yaml.safe_load(output)
+        assert data["_export"]["format"] == "yaml"
+        assert data["profile"]["id"] == "test-profile"
+
+    def test_export_to_file(self, temp_config, sample_profile):
+        """Test exporting to a file."""
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            output_path = f.name
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="test-profile",
+            output=output_path,
+            format=None,
+            no_metadata=False,
+        )
+
+        with patch("sys.stdout", new=StringIO()) as mock_out:
+            result = cmd_export(args)
+
+        assert result == 0
+        assert "Exported" in mock_out.getvalue()
+
+        # Verify file contents
+        data = json.loads(Path(output_path).read_text())
+        assert data["profile"]["id"] == "test-profile"
+
+    def test_export_yaml_file_auto_detect(self, temp_config, sample_profile):
+        """Test YAML format is auto-detected from .yaml extension."""
+        import yaml
+
+        config_dir, loader = temp_config
+        loader.save_profile(sample_profile)
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            output_path = f.name
+
+        args = argparse.Namespace(
+            config_dir=config_dir,
+            profile_id="test-profile",
+            output=output_path,
+            format=None,  # Should auto-detect from extension
+            no_metadata=False,
+        )
+
+        with patch("sys.stdout", new=StringIO()):
+            result = cmd_export(args)
+
+        assert result == 0
+
+        # Verify YAML contents
+        data = yaml.safe_load(Path(output_path).read_text())
+        assert data["_export"]["format"] == "yaml"
+        assert data["profile"]["id"] == "test-profile"
 
 
 class TestCmdImport:
@@ -372,7 +492,7 @@ class TestCmdImport:
         """Test importing from a file that doesn't exist."""
         config_dir, _ = temp_config
         args = argparse.Namespace(
-            config_dir=config_dir, file="/nonexistent/path.json", force=False
+            config_dir=config_dir, file="/nonexistent/path.json", force=False, new_id=None
         )
 
         with patch("sys.stdout", new=StringIO()) as mock_out:
@@ -386,16 +506,18 @@ class TestCmdImport:
         config_dir, _ = temp_config
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write("not valid json")
+            f.write("not valid json {{{{")
             f.flush()
 
-            args = argparse.Namespace(config_dir=config_dir, file=f.name, force=False)
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id=None
+            )
 
             with patch("sys.stdout", new=StringIO()) as mock_out:
                 result = cmd_import(args)
 
             assert result == 1
-            assert "Invalid JSON" in mock_out.getvalue()
+            assert "Invalid file format" in mock_out.getvalue()
 
     def test_import_profile(self, temp_config, sample_profile):
         """Test importing a profile."""
@@ -408,7 +530,9 @@ class TestCmdImport:
             json.dump(data, f)
             f.flush()
 
-            args = argparse.Namespace(config_dir=config_dir, file=f.name, force=False)
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id=None
+            )
 
             with patch("sys.stdout", new=StringIO()) as mock_out:
                 result = cmd_import(args)
@@ -418,6 +542,94 @@ class TestCmdImport:
 
         imported = loader.load_profile("test-profile")
         assert imported is not None
+        assert imported.name == "Test Profile"
+
+    def test_import_yaml(self, temp_config, sample_profile):
+        """Test importing a profile from YAML."""
+        import yaml
+
+        config_dir, loader = temp_config
+
+        # Export profile data to YAML
+        data = sample_profile.model_dump(mode="json")
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            yaml.dump(data, f)
+            f.flush()
+
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id=None
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_import(args)
+
+            assert result == 0
+            assert "Imported" in mock_out.getvalue()
+
+        imported = loader.load_profile("test-profile")
+        assert imported is not None
+        assert imported.name == "Test Profile"
+
+    def test_import_wrapped_format(self, temp_config, sample_profile):
+        """Test importing a profile with metadata wrapper."""
+        config_dir, loader = temp_config
+
+        # Create wrapped format (as exported by new version)
+        export_data = {
+            "_export": {
+                "version": "1.0",
+                "exported_at": "2024-01-01T00:00:00",
+                "format": "json",
+            },
+            "profile": sample_profile.model_dump(mode="json"),
+        }
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(export_data, f)
+            f.flush()
+
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id=None
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_import(args)
+
+            assert result == 0
+            assert "Imported" in mock_out.getvalue()
+
+        imported = loader.load_profile("test-profile")
+        assert imported is not None
+        assert imported.name == "Test Profile"
+
+    def test_import_with_new_id(self, temp_config, sample_profile):
+        """Test importing a profile with a new ID."""
+        config_dir, loader = temp_config
+
+        data = sample_profile.model_dump(mode="json")
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(data, f)
+            f.flush()
+
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id="my-custom-id"
+            )
+
+            with patch("sys.stdout", new=StringIO()) as mock_out:
+                result = cmd_import(args)
+
+            assert result == 0
+            assert "Imported" in mock_out.getvalue()
+
+        # Original ID should not exist
+        assert loader.load_profile("test-profile") is None
+
+        # New ID should exist
+        imported = loader.load_profile("my-custom-id")
+        assert imported is not None
+        assert imported.id == "my-custom-id"
         assert imported.name == "Test Profile"
 
     def test_import_existing_no_force(self, temp_config, sample_profile):
@@ -431,7 +643,9 @@ class TestCmdImport:
             json.dump(data, f)
             f.flush()
 
-            args = argparse.Namespace(config_dir=config_dir, file=f.name, force=False)
+            args = argparse.Namespace(
+                config_dir=config_dir, file=f.name, force=False, new_id=None
+            )
 
             with patch("sys.stdout", new=StringIO()) as mock_out:
                 result = cmd_import(args)

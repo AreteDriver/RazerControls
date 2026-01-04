@@ -14,7 +14,10 @@ Usage:
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
+
+import yaml
 
 from crates.device_registry import DeviceRegistry
 from crates.keycode_map import validate_key
@@ -24,6 +27,9 @@ from crates.profile_schema import (
     Profile,
     ProfileLoader,
 )
+
+# Export format version for future compatibility
+EXPORT_VERSION = "1.0"
 
 
 def get_loader(config_dir: Path | None = None) -> ProfileLoader:
@@ -256,8 +262,46 @@ def cmd_copy(args) -> int:
         return 1
 
 
+def _serialize_profile(profile: Profile, fmt: str, include_metadata: bool = True) -> str:
+    """Serialize a profile to JSON or YAML format."""
+    data = profile.model_dump(mode="json")
+
+    if include_metadata:
+        export_data = {
+            "_export": {
+                "version": EXPORT_VERSION,
+                "exported_at": datetime.now().isoformat(),
+                "format": fmt,
+            },
+            "profile": data,
+        }
+    else:
+        export_data = data
+
+    if fmt == "yaml":
+        return yaml.dump(export_data, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    else:
+        return json.dumps(export_data, indent=2)
+
+
+def _deserialize_profile(content: str, path: Path) -> Profile:
+    """Deserialize a profile from JSON or YAML."""
+    suffix = path.suffix.lower()
+
+    if suffix in (".yaml", ".yml"):
+        data = yaml.safe_load(content)
+    else:
+        data = json.loads(content)
+
+    # Handle wrapped format with metadata
+    if isinstance(data, dict) and "profile" in data and "_export" in data:
+        data = data["profile"]
+
+    return Profile.model_validate(data)
+
+
 def cmd_export(args) -> int:
-    """Export a profile to JSON."""
+    """Export a profile to JSON or YAML."""
     loader = get_loader(args.config_dir)
 
     profile = loader.load_profile(args.profile_id)
@@ -265,15 +309,22 @@ def cmd_export(args) -> int:
         print(f"Error: Profile '{args.profile_id}' not found.", file=sys.stderr)
         return 1
 
-    data = profile.model_dump(mode="json")
-    json_str = json.dumps(data, indent=2)
+    # Determine format from output path or explicit flag
+    fmt = args.format
+    if not fmt and args.output:
+        suffix = Path(args.output).suffix.lower()
+        if suffix in (".yaml", ".yml"):
+            fmt = "yaml"
+    fmt = fmt or "json"
+
+    output_str = _serialize_profile(profile, fmt, include_metadata=not args.no_metadata)
 
     if args.output:
         output_path = Path(args.output)
-        output_path.write_text(json_str)
-        print(f"Exported '{profile.name}' to {output_path}")
+        output_path.write_text(output_str)
+        print(f"Exported '{profile.name}' to {output_path} ({fmt.upper()})")
     else:
-        print(json_str)
+        print(output_str)
 
     return 0
 
@@ -288,24 +339,33 @@ def cmd_export_all(args) -> int:
         return 1
 
     output_path = Path(args.output)
+    fmt = args.format or "json"
+    ext = "yaml" if fmt == "yaml" else "json"
 
     if args.zip:
         # Export as zip
         import zipfile
-        from datetime import datetime
 
         if output_path.is_dir():
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = output_path / f"razer_profiles_{timestamp}.zip"
 
         with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            # Add manifest
+            manifest = {
+                "version": EXPORT_VERSION,
+                "exported_at": datetime.now().isoformat(),
+                "profiles": profiles,
+            }
+            zf.writestr("manifest.json", json.dumps(manifest, indent=2))
+
             for pid in profiles:
                 profile = loader.load_profile(pid)
                 if profile:
-                    data = profile.model_dump(mode="json")
-                    zf.writestr(f"{pid}.json", json.dumps(data, indent=2))
+                    content = _serialize_profile(profile, fmt, include_metadata=False)
+                    zf.writestr(f"{pid}.{ext}", content)
 
-        print(f"Exported {len(profiles)} profile(s) to {output_path}")
+        print(f"Exported {len(profiles)} profile(s) to {output_path} ({fmt.upper()})")
     else:
         # Export to directory
         output_path.mkdir(parents=True, exist_ok=True)
@@ -313,40 +373,50 @@ def cmd_export_all(args) -> int:
         for pid in profiles:
             profile = loader.load_profile(pid)
             if profile:
-                data = profile.model_dump(mode="json")
-                file_path = output_path / f"{pid}.json"
-                file_path.write_text(json.dumps(data, indent=2))
-                print(f"  Exported: {pid}.json")
+                content = _serialize_profile(profile, fmt, include_metadata=not args.no_metadata)
+                file_path = output_path / f"{pid}.{ext}"
+                file_path.write_text(content)
+                print(f"  Exported: {pid}.{ext}")
 
-        print(f"\nExported {len(profiles)} profile(s) to {output_path}/")
+        print(f"\nExported {len(profiles)} profile(s) to {output_path}/ ({fmt.upper()})")
 
     return 0
 
 
 def cmd_import(args) -> int:
-    """Import a profile from a JSON file."""
+    """Import a profile from a JSON or YAML file."""
     loader = get_loader(args.config_dir)
 
     # Read file
     try:
         if args.file == "-":
-            data = json.load(sys.stdin)
+            content = sys.stdin.read()
+            # Try JSON first, then YAML
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError:
+                data = yaml.safe_load(content)
+            # Handle wrapped format
+            if isinstance(data, dict) and "profile" in data and "_export" in data:
+                data = data["profile"]
+            profile = Profile.model_validate(data)
         else:
             path = Path(args.file)
             if not path.exists():
                 print(f"Error: File not found: {args.file}")
                 return 1
-            data = json.loads(path.read_text())
-    except json.JSONDecodeError as e:
-        print(f"Error: Invalid JSON: {e}")
+            content = path.read_text()
+            profile = _deserialize_profile(content, path)
+    except (json.JSONDecodeError, yaml.YAMLError) as e:
+        print(f"Error: Invalid file format: {e}")
         return 1
-
-    # Validate
-    try:
-        profile = Profile.model_validate(data)
     except Exception as e:
         print(f"Error: Invalid profile data: {e}")
         return 1
+
+    # Override ID if specified
+    if args.new_id:
+        profile = Profile.model_validate({**profile.model_dump(), "id": args.new_id})
 
     # Check for existing
     if loader.load_profile(profile.id) and not args.force:
@@ -356,6 +426,8 @@ def cmd_import(args) -> int:
     if loader.save_profile(profile):
         print(f"Imported profile: {profile.id}")
         print(f"  Name: {profile.name}")
+        print(f"  Layers: {len(profile.layers)}")
+        print(f"  Macros: {len(profile.macros)}")
         return 0
     else:
         print("Error: Failed to save profile.")
@@ -468,18 +540,22 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s list                          List all profiles
-  %(prog)s show default                  Show details of 'default' profile
-  %(prog)s new "Gaming Profile"          Create a new profile
-  %(prog)s new "FPS" --activate          Create and activate a profile
-  %(prog)s activate gaming               Set 'gaming' as active
-  %(prog)s delete old_profile            Delete a profile
-  %(prog)s copy gaming gaming_backup     Copy a profile
-  %(prog)s export gaming -o backup.json  Export to file
-  %(prog)s export-all ~/backup --zip     Export all as zip
-  %(prog)s import backup.json            Import from file
-  %(prog)s validate gaming               Validate bindings
-  %(prog)s devices                       List available devices
+  %(prog)s list                              List all profiles
+  %(prog)s show default                      Show details of 'default' profile
+  %(prog)s new "Gaming Profile"              Create a new profile
+  %(prog)s new "FPS" --activate              Create and activate a profile
+  %(prog)s activate gaming                   Set 'gaming' as active
+  %(prog)s delete old_profile                Delete a profile
+  %(prog)s copy gaming gaming_backup         Copy a profile
+  %(prog)s export gaming -o backup.json      Export to JSON file
+  %(prog)s export gaming -o backup.yaml      Export to YAML file
+  %(prog)s export-all ~/backup --zip         Export all as zip
+  %(prog)s export-all ~/backup --format yaml Export all as YAML
+  %(prog)s import backup.json                Import from JSON
+  %(prog)s import backup.yaml                Import from YAML
+  %(prog)s import backup.json --new-id copy  Import with new ID
+  %(prog)s validate gaming                   Validate bindings
+  %(prog)s devices                           List available devices
 """,
     )
 
@@ -529,21 +605,34 @@ Examples:
     sub_copy.set_defaults(func=cmd_copy)
 
     # export
-    sub_export = subparsers.add_parser("export", help="Export profile to JSON")
+    sub_export = subparsers.add_parser("export", help="Export profile to JSON/YAML")
     sub_export.add_argument("profile_id", help="Profile ID to export")
     sub_export.add_argument("--output", "-o", help="Output file (default: stdout)")
+    sub_export.add_argument(
+        "--format", choices=["json", "yaml"], help="Output format (auto-detected from extension)"
+    )
+    sub_export.add_argument(
+        "--no-metadata", action="store_true", help="Exclude export metadata (version, timestamp)"
+    )
     sub_export.set_defaults(func=cmd_export)
 
     # export-all
     sub_export_all = subparsers.add_parser("export-all", help="Export all profiles")
     sub_export_all.add_argument("output", help="Output directory or zip file")
     sub_export_all.add_argument("--zip", "-z", action="store_true", help="Export as zip file")
+    sub_export_all.add_argument(
+        "--format", choices=["json", "yaml"], default="json", help="Output format (default: json)"
+    )
+    sub_export_all.add_argument(
+        "--no-metadata", action="store_true", help="Exclude export metadata"
+    )
     sub_export_all.set_defaults(func=cmd_export_all)
 
     # import
-    sub_import = subparsers.add_parser("import", help="Import profile from JSON")
-    sub_import.add_argument("file", help="JSON file to import (use - for stdin)")
+    sub_import = subparsers.add_parser("import", help="Import profile from JSON/YAML")
+    sub_import.add_argument("file", help="JSON/YAML file to import (use - for stdin)")
     sub_import.add_argument("--force", "-f", action="store_true", help="Overwrite existing")
+    sub_import.add_argument("--new-id", help="Import with a different profile ID")
     sub_import.set_defaults(func=cmd_import)
 
     # validate

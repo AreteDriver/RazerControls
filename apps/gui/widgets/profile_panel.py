@@ -1,9 +1,15 @@
 """Profile panel widget for managing profiles."""
 
+import json
+from datetime import datetime
+from pathlib import Path
+
+import yaml
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -19,6 +25,9 @@ from PySide6.QtWidgets import (
 )
 
 from crates.profile_schema import Layer, Profile, ProfileLoader
+
+# Export format version
+EXPORT_VERSION = "1.0"
 
 
 class NewProfileDialog(QDialog):
@@ -88,7 +97,7 @@ class ProfilePanel(QWidget):
         self.profile_list.currentRowChanged.connect(self._on_profile_selected)
         group_layout.addWidget(self.profile_list)
 
-        # Buttons
+        # Buttons row 1: New, Delete
         btn_layout = QHBoxLayout()
 
         self.new_btn = QPushButton("New")
@@ -101,6 +110,20 @@ class ProfilePanel(QWidget):
         btn_layout.addWidget(self.delete_btn)
 
         group_layout.addLayout(btn_layout)
+
+        # Buttons row 2: Import, Export
+        io_layout = QHBoxLayout()
+
+        self.import_btn = QPushButton("Import")
+        self.import_btn.clicked.connect(self._import_profile)
+        io_layout.addWidget(self.import_btn)
+
+        self.export_btn = QPushButton("Export")
+        self.export_btn.clicked.connect(self._export_profile)
+        self.export_btn.setEnabled(False)
+        io_layout.addWidget(self.export_btn)
+
+        group_layout.addLayout(io_layout)
 
         # Activate button
         self.activate_btn = QPushButton("Set as Active")
@@ -145,6 +168,7 @@ class ProfilePanel(QWidget):
         if row < 0:
             self.delete_btn.setEnabled(False)
             self.activate_btn.setEnabled(False)
+            self.export_btn.setEnabled(False)
             return
 
         item = self.profile_list.item(row)
@@ -152,6 +176,7 @@ class ProfilePanel(QWidget):
             profile_id = item.data(Qt.ItemDataRole.UserRole)
             self.delete_btn.setEnabled(True)
             self.activate_btn.setEnabled(True)
+            self.export_btn.setEnabled(True)
             self.profile_selected.emit(profile_id)
 
     def _create_profile(self):
@@ -190,3 +215,125 @@ class ProfilePanel(QWidget):
         profile_id = item.data(Qt.UserRole)
         self.profile_loader.set_active_profile(profile_id)
         self.load_profiles(self.profile_loader)
+
+    def _import_profile(self):
+        """Import a profile from a file."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Profile",
+            str(Path.home()),
+            "Profile Files (*.json *.yaml *.yml);;JSON Files (*.json);;YAML Files (*.yaml *.yml)",
+        )
+
+        if not file_path:
+            return
+
+        path = Path(file_path)
+        try:
+            content = path.read_text()
+            suffix = path.suffix.lower()
+
+            # Parse based on extension
+            if suffix in (".yaml", ".yml"):
+                data = yaml.safe_load(content)
+            else:
+                data = json.loads(content)
+
+            # Handle wrapped format with metadata
+            if isinstance(data, dict) and "profile" in data and "_export" in data:
+                data = data["profile"]
+
+            profile = Profile.model_validate(data)
+
+            # Check if profile already exists
+            if self.profile_loader and self.profile_loader.load_profile(profile.id):
+                reply = QMessageBox.question(
+                    self,
+                    "Profile Exists",
+                    f"Profile '{profile.id}' already exists. Overwrite?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                )
+                if reply != QMessageBox.StandardButton.Yes:
+                    return
+
+            # Save the profile
+            if self.profile_loader and self.profile_loader.save_profile(profile):
+                QMessageBox.information(
+                    self,
+                    "Import Successful",
+                    f"Imported profile: {profile.name}",
+                )
+                self.load_profiles(self.profile_loader)
+                self.profile_created.emit(profile)
+            else:
+                QMessageBox.warning(self, "Import Failed", "Failed to save the imported profile.")
+
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            QMessageBox.critical(self, "Import Error", f"Invalid file format:\n{e}")
+        except Exception as e:
+            QMessageBox.critical(self, "Import Error", f"Failed to import profile:\n{e}")
+
+    def _export_profile(self):
+        """Export the selected profile to a file."""
+        item = self.profile_list.currentItem()
+        if not item or not self.profile_loader:
+            return
+
+        profile_id = item.data(Qt.ItemDataRole.UserRole)
+        profile = self.profile_loader.load_profile(profile_id)
+        if not profile:
+            return
+
+        # Ask for save location
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Export Profile",
+            str(Path.home() / f"{profile_id}.json"),
+            "JSON Files (*.json);;YAML Files (*.yaml)",
+        )
+
+        if not file_path:
+            return
+
+        path = Path(file_path)
+
+        # Determine format from extension
+        suffix = path.suffix.lower()
+        if suffix in (".yaml", ".yml"):
+            fmt = "yaml"
+        else:
+            fmt = "json"
+            # Ensure .json extension
+            if suffix != ".json":
+                path = path.with_suffix(".json")
+
+        try:
+            # Build export data with metadata
+            data = profile.model_dump(mode="json")
+            export_data = {
+                "_export": {
+                    "version": EXPORT_VERSION,
+                    "exported_at": datetime.now().isoformat(),
+                    "format": fmt,
+                },
+                "profile": data,
+            }
+
+            # Serialize
+            if fmt == "yaml":
+                content = yaml.dump(
+                    export_data, default_flow_style=False, sort_keys=False, allow_unicode=True
+                )
+            else:
+                content = json.dumps(export_data, indent=2)
+
+            path.write_text(content)
+
+            QMessageBox.information(
+                self,
+                "Export Successful",
+                f"Exported '{profile.name}' to:\n{path}",
+            )
+
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export profile:\n{e}")
