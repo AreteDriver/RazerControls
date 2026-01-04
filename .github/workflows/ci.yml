@@ -32,7 +32,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgirepository1.0-dev libcairo2-dev gir1.2-glib-2.0 gobject-introspection pkg-config python3-gi
+          sudo apt-get install -y libgirepository-1.0-dev libcairo2-dev gir1.2-glib-2.0 gobject-introspection pkg-config python3-gi
       - name: Install dependencies
         run: |
           pip install -e ".[dev]"
@@ -54,7 +54,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgirepository1.0-dev libcairo2-dev gir1.2-glib-2.0 gobject-introspection pkg-config python3-gi
+          sudo apt-get install -y libgirepository-1.0-dev libcairo2-dev gir1.2-glib-2.0 gobject-introspection pkg-config python3-gi
       - name: Install dependencies
         run: |
           pip install -e ".[dev]"
