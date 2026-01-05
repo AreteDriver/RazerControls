@@ -7460,3 +7460,157 @@ class TestMainWindowCoverage:
                 window._disable_autostart()
                 mock_warning.assert_called_once()
         window.close()
+
+
+class TestMainWindowDeviceVisual:
+    """Tests for MainWindow device visual handlers."""
+
+    @pytest.fixture
+    def qapp(self):
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication([])
+        yield app
+
+    @pytest.fixture
+    def mock_deps(self):
+        """Mock all MainWindow dependencies."""
+        mock_run_result = MagicMock()
+        mock_run_result.returncode = 0
+        with patch("apps.gui.main_window.ProfileLoader") as mock_loader, patch(
+            "apps.gui.main_window.DeviceRegistry"
+        ) as mock_registry, patch(
+            "apps.gui.main_window.OpenRazerBridge"
+        ) as mock_bridge, patch(
+            "apps.gui.main_window.subprocess.run", return_value=mock_run_result
+        ) as mock_subprocess:
+            mock_loader.return_value.list_profiles.return_value = []
+            mock_loader.return_value.get_active_profile_id.return_value = None
+            mock_registry.return_value.list_devices.return_value = []
+            mock_bridge.return_value.connect.return_value = False
+            mock_bridge.return_value.discover_devices.return_value = []
+            yield {
+                "loader": mock_loader,
+                "registry": mock_registry,
+                "bridge": mock_bridge,
+                "subprocess": mock_subprocess,
+            }
+
+    def test_on_device_button_clicked(self, qapp, mock_deps):
+        """Test _on_device_button_clicked shows status message."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+        window._on_device_button_clicked("BTN_1", "BTN_LEFT")
+
+        # Verify status bar shows message (line 248)
+        assert "BTN_1" in window.statusbar.currentMessage()
+        assert "BTN_LEFT" in window.statusbar.currentMessage()
+        window.close()
+
+    def test_on_device_zone_clicked_no_device(self, qapp, mock_deps):
+        """Test _on_device_zone_clicked without device selected."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+        window._current_razer_device = None
+
+        window._on_device_zone_clicked("zone_1")
+
+        # Should show "Select a device first" (lines 254-257)
+        assert "Select a device" in window.statusbar.currentMessage()
+        window.close()
+
+    def test_on_device_zone_clicked_color_cancelled(self, qapp, mock_deps):
+        """Test _on_device_zone_clicked when color dialog cancelled."""
+        from apps.gui.main_window import MainWindow
+        from PySide6.QtWidgets import QColorDialog
+
+        window = MainWindow()
+        mock_device = MagicMock()
+        mock_device.serial = "TEST123"
+        window._current_razer_device = mock_device
+
+        # Mock color dialog to return invalid color (cancelled)
+        with patch.object(QColorDialog, "getColor") as mock_dialog:
+            mock_color = MagicMock()
+            mock_color.isValid.return_value = False
+            mock_dialog.return_value = mock_color
+
+            window._on_device_zone_clicked("zone_1")
+
+            # Should not try to set color (line 260 condition)
+            window.openrazer.set_static_color.assert_not_called()
+        window.close()
+
+    def test_on_device_zone_clicked_color_success(self, qapp, mock_deps):
+        """Test _on_device_zone_clicked with valid color."""
+        from apps.gui.main_window import MainWindow
+        from PySide6.QtWidgets import QColorDialog
+
+        window = MainWindow()
+        mock_device = MagicMock()
+        mock_device.serial = "TEST123"
+        window._current_razer_device = mock_device
+
+        # Mock color dialog to return valid color
+        with patch.object(QColorDialog, "getColor") as mock_dialog:
+            mock_color = MagicMock()
+            mock_color.isValid.return_value = True
+            mock_color.red.return_value = 255
+            mock_color.green.return_value = 128
+            mock_color.blue.return_value = 64
+            mock_color.name.return_value = "#ff8040"
+            mock_dialog.return_value = mock_color
+
+            window._on_device_zone_clicked("zone_1")
+
+            # Verify color was set (lines 262-268)
+            window.openrazer.set_static_color.assert_called_with(
+                mock_device, 255, 128, 64
+            )
+            assert "zone_1" in window.statusbar.currentMessage()
+            assert "#ff8040" in window.statusbar.currentMessage()
+        window.close()
+
+    def test_on_device_zone_clicked_color_exception(self, qapp, mock_deps):
+        """Test _on_device_zone_clicked handles device exception."""
+        from apps.gui.main_window import MainWindow
+        from PySide6.QtWidgets import QColorDialog
+
+        window = MainWindow()
+        mock_device = MagicMock()
+        mock_device.serial = "TEST123"
+        window._current_razer_device = mock_device
+
+        # Mock color dialog to return valid color
+        with patch.object(QColorDialog, "getColor") as mock_dialog:
+            mock_color = MagicMock()
+            mock_color.isValid.return_value = True
+            mock_color.red.return_value = 255
+            mock_color.green.return_value = 0
+            mock_color.blue.return_value = 0
+            mock_dialog.return_value = mock_color
+
+            # Make set_static_color raise exception
+            window.openrazer.set_static_color.side_effect = Exception("Device error")
+
+            window._on_device_zone_clicked("zone_1")
+
+            # Verify error message in status bar (line 270)
+            assert "Failed" in window.statusbar.currentMessage()
+        window.close()
+
+    def test_on_device_selection_changed(self, qapp, mock_deps):
+        """Test _on_device_selection_changed (currently a no-op)."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        # Call with some selected IDs (line 400 - pass statement)
+        window._on_device_selection_changed(["device1", "device2"])
+
+        # Should not crash - method is intentionally a no-op
+        window.close()
