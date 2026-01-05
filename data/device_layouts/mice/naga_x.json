@@ -1,0 +1,219 @@
+{
+  "id": "razer_naga_x",
+  "name": "Razer Naga X",
+  "category": "mouse",
+  "device_name_patterns": [
+    ".*naga.*x.*",
+    ".*Naga X.*",
+    ".*naga.*trinity.*",
+    ".*naga.*pro.*"
+  ],
+  "base_width": 85,
+  "base_height": 130,
+  "outline_path": [
+    [0.5, 0.0],
+    [0.80, 0.08],
+    [0.92, 0.22],
+    [1.0, 0.42],
+    [0.98, 0.62],
+    [0.88, 0.82],
+    [0.70, 0.94],
+    [0.5, 1.0],
+    [0.30, 0.94],
+    [0.12, 0.82],
+    [0.02, 0.62],
+    [0.0, 0.42],
+    [0.08, 0.22],
+    [0.20, 0.08]
+  ],
+  "buttons": [
+    {
+      "id": "left_click",
+      "label": "Left Click",
+      "x": 0.08,
+      "y": 0.02,
+      "width": 0.38,
+      "height": 0.30,
+      "shape_type": "rect",
+      "input_code": "BTN_LEFT"
+    },
+    {
+      "id": "right_click",
+      "label": "Right Click",
+      "x": 0.54,
+      "y": 0.02,
+      "width": 0.38,
+      "height": 0.30,
+      "shape_type": "rect",
+      "input_code": "BTN_RIGHT"
+    },
+    {
+      "id": "scroll_wheel",
+      "label": "Scroll",
+      "x": 0.38,
+      "y": 0.08,
+      "width": 0.24,
+      "height": 0.16,
+      "shape_type": "ellipse",
+      "input_code": "BTN_MIDDLE"
+    },
+    {
+      "id": "dpi_up",
+      "label": "DPI ↑",
+      "x": 0.40,
+      "y": 0.34,
+      "width": 0.20,
+      "height": 0.05,
+      "shape_type": "rect"
+    },
+    {
+      "id": "dpi_down",
+      "label": "DPI ↓",
+      "x": 0.40,
+      "y": 0.40,
+      "width": 0.20,
+      "height": 0.05,
+      "shape_type": "rect"
+    },
+    {
+      "id": "side_1",
+      "label": "1",
+      "x": 0.0,
+      "y": 0.28,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_1"
+    },
+    {
+      "id": "side_2",
+      "label": "2",
+      "x": 0.09,
+      "y": 0.28,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_2"
+    },
+    {
+      "id": "side_3",
+      "label": "3",
+      "x": 0.18,
+      "y": 0.28,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_3"
+    },
+    {
+      "id": "side_4",
+      "label": "4",
+      "x": 0.0,
+      "y": 0.38,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_4"
+    },
+    {
+      "id": "side_5",
+      "label": "5",
+      "x": 0.09,
+      "y": 0.38,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_5"
+    },
+    {
+      "id": "side_6",
+      "label": "6",
+      "x": 0.18,
+      "y": 0.38,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_6"
+    },
+    {
+      "id": "side_7",
+      "label": "7",
+      "x": 0.0,
+      "y": 0.48,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_7"
+    },
+    {
+      "id": "side_8",
+      "label": "8",
+      "x": 0.09,
+      "y": 0.48,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_8"
+    },
+    {
+      "id": "side_9",
+      "label": "9",
+      "x": 0.18,
+      "y": 0.48,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_9"
+    },
+    {
+      "id": "side_10",
+      "label": "10",
+      "x": 0.0,
+      "y": 0.58,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_0"
+    },
+    {
+      "id": "side_11",
+      "label": "11",
+      "x": 0.09,
+      "y": 0.58,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_MINUS"
+    },
+    {
+      "id": "side_12",
+      "label": "12",
+      "x": 0.18,
+      "y": 0.58,
+      "width": 0.08,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "KEY_EQUAL"
+    },
+    {
+      "id": "scroll_zone",
+      "label": "Scroll LED",
+      "x": 0.38,
+      "y": 0.24,
+      "width": 0.24,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "logo_zone",
+      "label": "Logo",
+      "x": 0.32,
+      "y": 0.68,
+      "width": 0.36,
+      "height": 0.12,
+      "shape_type": "ellipse",
+      "is_zone": true
+    }
+  ]
+}

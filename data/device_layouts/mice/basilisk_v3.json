@@ -1,0 +1,174 @@
+{
+  "id": "razer_basilisk_v3",
+  "name": "Razer Basilisk V3",
+  "category": "mouse",
+  "device_name_patterns": [
+    ".*basilisk.*v3.*",
+    ".*Basilisk V3.*"
+  ],
+  "base_width": 75,
+  "base_height": 130,
+  "outline_path": [
+    [0.5, 0.0],
+    [0.82, 0.10],
+    [0.95, 0.25],
+    [1.0, 0.45],
+    [0.97, 0.65],
+    [0.85, 0.85],
+    [0.65, 0.95],
+    [0.5, 1.0],
+    [0.35, 0.95],
+    [0.15, 0.85],
+    [0.03, 0.65],
+    [0.0, 0.45],
+    [0.05, 0.25],
+    [0.18, 0.10]
+  ],
+  "buttons": [
+    {
+      "id": "left_click",
+      "label": "Left Click",
+      "x": 0.06,
+      "y": 0.02,
+      "width": 0.40,
+      "height": 0.32,
+      "shape_type": "rect",
+      "input_code": "BTN_LEFT"
+    },
+    {
+      "id": "right_click",
+      "label": "Right Click",
+      "x": 0.54,
+      "y": 0.02,
+      "width": 0.40,
+      "height": 0.32,
+      "shape_type": "rect",
+      "input_code": "BTN_RIGHT"
+    },
+    {
+      "id": "scroll_wheel",
+      "label": "Scroll",
+      "x": 0.38,
+      "y": 0.08,
+      "width": 0.24,
+      "height": 0.18,
+      "shape_type": "ellipse",
+      "input_code": "BTN_MIDDLE"
+    },
+    {
+      "id": "scroll_left",
+      "label": "Tilt L",
+      "x": 0.32,
+      "y": 0.12,
+      "width": 0.06,
+      "height": 0.10,
+      "shape_type": "rect"
+    },
+    {
+      "id": "scroll_right",
+      "label": "Tilt R",
+      "x": 0.62,
+      "y": 0.12,
+      "width": 0.06,
+      "height": 0.10,
+      "shape_type": "rect"
+    },
+    {
+      "id": "dpi_up",
+      "label": "DPI ↑",
+      "x": 0.40,
+      "y": 0.36,
+      "width": 0.20,
+      "height": 0.06,
+      "shape_type": "rect"
+    },
+    {
+      "id": "dpi_down",
+      "label": "DPI ↓",
+      "x": 0.40,
+      "y": 0.43,
+      "width": 0.20,
+      "height": 0.06,
+      "shape_type": "rect"
+    },
+    {
+      "id": "profile_button",
+      "label": "Profile",
+      "x": 0.40,
+      "y": 0.50,
+      "width": 0.20,
+      "height": 0.05,
+      "shape_type": "rect"
+    },
+    {
+      "id": "side_forward",
+      "label": "Mouse 5",
+      "x": 0.0,
+      "y": 0.35,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_FORWARD"
+    },
+    {
+      "id": "side_back",
+      "label": "Mouse 4",
+      "x": 0.0,
+      "y": 0.47,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_BACK"
+    },
+    {
+      "id": "dpi_clutch",
+      "label": "Clutch",
+      "x": 0.0,
+      "y": 0.60,
+      "width": 0.12,
+      "height": 0.15,
+      "shape_type": "rect",
+      "input_code": "BTN_EXTRA"
+    },
+    {
+      "id": "multi_paddle",
+      "label": "Paddle",
+      "x": 0.02,
+      "y": 0.78,
+      "width": 0.18,
+      "height": 0.08,
+      "shape_type": "rect",
+      "input_code": "BTN_SIDE"
+    },
+    {
+      "id": "scroll_zone",
+      "label": "Scroll LED",
+      "x": 0.38,
+      "y": 0.26,
+      "width": 0.24,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "logo_zone",
+      "label": "Logo",
+      "x": 0.30,
+      "y": 0.58,
+      "width": 0.40,
+      "height": 0.14,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "underglow_zone",
+      "label": "Underglow",
+      "x": 0.15,
+      "y": 0.88,
+      "width": 0.70,
+      "height": 0.08,
+      "shape_type": "rect",
+      "is_zone": true
+    }
+  ]
+}

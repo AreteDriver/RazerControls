@@ -1,0 +1,220 @@
+{
+  "id": "razer_blackwidow_v3",
+  "name": "Razer BlackWidow V3",
+  "category": "keyboard",
+  "device_name_patterns": [
+    ".*blackwidow.*v3.*",
+    ".*BlackWidow V3.*",
+    ".*blackwidow.*elite.*"
+  ],
+  "base_width": 480,
+  "base_height": 180,
+  "outline_path": [
+    [0.0, 0.0],
+    [1.0, 0.0],
+    [1.0, 0.85],
+    [0.0, 0.85]
+  ],
+  "buttons": [
+    {
+      "id": "zone_escape",
+      "label": "ESC",
+      "x": 0.02,
+      "y": 0.08,
+      "width": 0.04,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_function",
+      "label": "F1-F12",
+      "x": 0.10,
+      "y": 0.08,
+      "width": 0.52,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_print_scroll_pause",
+      "label": "PrtSc/ScrLk/Pause",
+      "x": 0.64,
+      "y": 0.08,
+      "width": 0.12,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_media",
+      "label": "Media",
+      "x": 0.78,
+      "y": 0.04,
+      "width": 0.20,
+      "height": 0.08,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_volume",
+      "label": "Vol",
+      "x": 0.92,
+      "y": 0.04,
+      "width": 0.06,
+      "height": 0.16,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numbers",
+      "label": "Number Row",
+      "x": 0.02,
+      "y": 0.22,
+      "width": 0.60,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_insert_home_pgup",
+      "label": "Ins/Home/PgUp",
+      "x": 0.64,
+      "y": 0.22,
+      "width": 0.12,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_top",
+      "label": "NumLk/÷/×/-",
+      "x": 0.78,
+      "y": 0.22,
+      "width": 0.20,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_qwerty",
+      "label": "QWERTY Row",
+      "x": 0.02,
+      "y": 0.36,
+      "width": 0.60,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_del_end_pgdn",
+      "label": "Del/End/PgDn",
+      "x": 0.64,
+      "y": 0.36,
+      "width": 0.12,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_789",
+      "label": "7/8/9/+",
+      "x": 0.78,
+      "y": 0.36,
+      "width": 0.20,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_home_row",
+      "label": "Home Row (ASDF)",
+      "x": 0.02,
+      "y": 0.50,
+      "width": 0.60,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_456",
+      "label": "4/5/6",
+      "x": 0.78,
+      "y": 0.50,
+      "width": 0.15,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_bottom_row",
+      "label": "Bottom Row (ZXCV)",
+      "x": 0.02,
+      "y": 0.64,
+      "width": 0.60,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_arrows",
+      "label": "Arrows",
+      "x": 0.64,
+      "y": 0.64,
+      "width": 0.12,
+      "height": 0.18,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_123",
+      "label": "1/2/3/Enter",
+      "x": 0.78,
+      "y": 0.64,
+      "width": 0.20,
+      "height": 0.12,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_spacebar",
+      "label": "Spacebar",
+      "x": 0.18,
+      "y": 0.78,
+      "width": 0.30,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_0",
+      "label": "0/.",
+      "x": 0.78,
+      "y": 0.78,
+      "width": 0.20,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_logo",
+      "label": "Razer Logo",
+      "x": 0.02,
+      "y": 0.04,
+      "width": 0.05,
+      "height": 0.04,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "zone_underglow",
+      "label": "Underglow",
+      "x": 0.0,
+      "y": 0.86,
+      "width": 1.0,
+      "height": 0.14,
+      "shape_type": "rect",
+      "is_zone": true
+    }
+  ]
+}

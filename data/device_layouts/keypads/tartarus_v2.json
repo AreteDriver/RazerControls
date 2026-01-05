@@ -1,0 +1,295 @@
+{
+  "id": "razer_tartarus_v2",
+  "name": "Razer Tartarus V2",
+  "category": "keypad",
+  "device_name_patterns": [
+    ".*tartarus.*v2.*",
+    ".*Tartarus V2.*",
+    ".*tartarus.*pro.*",
+    ".*Tartarus Pro.*"
+  ],
+  "base_width": 200,
+  "base_height": 220,
+  "outline_path": [
+    [0.05, 0.0],
+    [0.95, 0.0],
+    [1.0, 0.05],
+    [1.0, 0.65],
+    [0.90, 0.70],
+    [0.90, 1.0],
+    [0.10, 1.0],
+    [0.10, 0.70],
+    [0.0, 0.65],
+    [0.0, 0.05]
+  ],
+  "buttons": [
+    {
+      "id": "key_01",
+      "label": "01",
+      "x": 0.08,
+      "y": 0.05,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_ESC"
+    },
+    {
+      "id": "key_02",
+      "label": "02",
+      "x": 0.22,
+      "y": 0.05,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_1"
+    },
+    {
+      "id": "key_03",
+      "label": "03",
+      "x": 0.36,
+      "y": 0.05,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_2"
+    },
+    {
+      "id": "key_04",
+      "label": "04",
+      "x": 0.50,
+      "y": 0.05,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_3"
+    },
+    {
+      "id": "key_05",
+      "label": "05",
+      "x": 0.64,
+      "y": 0.05,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_4"
+    },
+    {
+      "id": "key_06",
+      "label": "06",
+      "x": 0.10,
+      "y": 0.17,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_TAB"
+    },
+    {
+      "id": "key_07",
+      "label": "07",
+      "x": 0.24,
+      "y": 0.17,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_Q"
+    },
+    {
+      "id": "key_08",
+      "label": "08",
+      "x": 0.38,
+      "y": 0.17,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_W"
+    },
+    {
+      "id": "key_09",
+      "label": "09",
+      "x": 0.52,
+      "y": 0.17,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_E"
+    },
+    {
+      "id": "key_10",
+      "label": "10",
+      "x": 0.66,
+      "y": 0.17,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_R"
+    },
+    {
+      "id": "key_11",
+      "label": "11",
+      "x": 0.12,
+      "y": 0.29,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_CAPSLOCK"
+    },
+    {
+      "id": "key_12",
+      "label": "12",
+      "x": 0.26,
+      "y": 0.29,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_A"
+    },
+    {
+      "id": "key_13",
+      "label": "13",
+      "x": 0.40,
+      "y": 0.29,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_S"
+    },
+    {
+      "id": "key_14",
+      "label": "14",
+      "x": 0.54,
+      "y": 0.29,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_D"
+    },
+    {
+      "id": "key_15",
+      "label": "15",
+      "x": 0.68,
+      "y": 0.29,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_F"
+    },
+    {
+      "id": "key_16",
+      "label": "16",
+      "x": 0.14,
+      "y": 0.41,
+      "width": 0.14,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_LEFTSHIFT"
+    },
+    {
+      "id": "key_17",
+      "label": "17",
+      "x": 0.30,
+      "y": 0.41,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_Z"
+    },
+    {
+      "id": "key_18",
+      "label": "18",
+      "x": 0.44,
+      "y": 0.41,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_X"
+    },
+    {
+      "id": "key_19",
+      "label": "19",
+      "x": 0.58,
+      "y": 0.41,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_C"
+    },
+    {
+      "id": "key_spacebar",
+      "label": "Space",
+      "x": 0.25,
+      "y": 0.53,
+      "width": 0.35,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "KEY_SPACE"
+    },
+    {
+      "id": "scroll_wheel",
+      "label": "Scroll",
+      "x": 0.80,
+      "y": 0.15,
+      "width": 0.14,
+      "height": 0.25,
+      "shape_type": "ellipse"
+    },
+    {
+      "id": "thumbstick",
+      "label": "Stick",
+      "x": 0.35,
+      "y": 0.72,
+      "width": 0.20,
+      "height": 0.20,
+      "shape_type": "ellipse"
+    },
+    {
+      "id": "thumb_key",
+      "label": "Thumb",
+      "x": 0.60,
+      "y": 0.75,
+      "width": 0.18,
+      "height": 0.14,
+      "shape_type": "rect",
+      "input_code": "KEY_LEFTALT"
+    },
+    {
+      "id": "thumb_key_2",
+      "label": "Thumb 2",
+      "x": 0.15,
+      "y": 0.75,
+      "width": 0.15,
+      "height": 0.14,
+      "shape_type": "rect",
+      "input_code": "KEY_LEFTCTRL"
+    },
+    {
+      "id": "zone_keys",
+      "label": "Key Lighting",
+      "x": 0.08,
+      "y": 0.05,
+      "width": 0.72,
+      "height": 0.58,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_scroll",
+      "label": "Scroll LED",
+      "x": 0.80,
+      "y": 0.15,
+      "width": 0.14,
+      "height": 0.25,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "zone_palm",
+      "label": "Palm Rest",
+      "x": 0.10,
+      "y": 0.92,
+      "width": 0.80,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    }
+  ]
+}

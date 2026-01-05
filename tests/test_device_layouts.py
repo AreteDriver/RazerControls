@@ -394,3 +394,126 @@ class TestJSONLayouts:
         layout = registry.get_layout_for_device("Razer DeathAdder V2")
         if layout:
             assert layout.id == "razer_deathadder_v2"
+
+    def test_basilisk_v3_layout(self):
+        """Test Basilisk V3 layout is loaded correctly."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout("razer_basilisk_v3")
+        assert layout is not None
+        assert layout.name == "Razer Basilisk V3"
+        assert layout.category == DeviceCategory.MOUSE
+        # Should have many buttons including DPI clutch and multi-paddle
+        assert len(layout.buttons) >= 12
+
+        # Check key buttons
+        button_ids = [b.id for b in layout.buttons]
+        assert "left_click" in button_ids
+        assert "dpi_clutch" in button_ids
+        assert "multi_paddle" in button_ids
+        assert "underglow_zone" in button_ids
+
+    def test_naga_x_layout(self):
+        """Test Naga X layout has 12 side buttons."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout("razer_naga_x")
+        assert layout is not None
+        assert layout.name == "Razer Naga X"
+
+        # Check all 12 side buttons exist
+        button_ids = [b.id for b in layout.buttons]
+        for i in range(1, 13):
+            assert f"side_{i}" in button_ids
+
+    def test_blackwidow_v3_layout(self):
+        """Test BlackWidow V3 keyboard layout."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout("razer_blackwidow_v3")
+        assert layout is not None
+        assert layout.category == DeviceCategory.KEYBOARD
+
+        # All buttons should be zones for keyboard
+        assert all(b.is_zone for b in layout.buttons)
+
+        # Check key zones exist
+        zone_ids = [b.id for b in layout.buttons]
+        assert "zone_function" in zone_ids
+        assert "zone_qwerty" in zone_ids
+        assert "zone_arrows" in zone_ids
+        assert "zone_underglow" in zone_ids
+
+    def test_tartarus_v2_layout(self):
+        """Test Tartarus V2 keypad layout."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout("razer_tartarus_v2")
+        assert layout is not None
+        assert layout.category == DeviceCategory.KEYPAD
+
+        # Check key elements
+        button_ids = [b.id for b in layout.buttons]
+        assert "thumbstick" in button_ids
+        assert "scroll_wheel" in button_ids
+        assert "key_spacebar" in button_ids
+
+    def test_pattern_matching_basilisk(self):
+        """Test Basilisk pattern matching."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout_for_device("Razer Basilisk V3 Pro")
+        assert layout is not None
+        assert layout.id == "razer_basilisk_v3"
+
+    def test_pattern_matching_naga(self):
+        """Test Naga pattern matching."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout_for_device("Razer Naga X")
+        assert layout is not None
+        assert layout.id == "razer_naga_x"
+
+        # Also matches Naga Trinity and Pro
+        layout2 = registry.get_layout_for_device("Razer Naga Trinity")
+        assert layout2 is not None
+
+    def test_pattern_matching_tartarus(self):
+        """Test Tartarus pattern matching."""
+        DeviceLayoutRegistry._initialized = False
+        DeviceLayoutRegistry._instance = None
+
+        registry = DeviceLayoutRegistry()
+        registry.load_layouts()
+
+        layout = registry.get_layout_for_device("Razer Tartarus V2")
+        assert layout is not None
+        assert layout.id == "razer_tartarus_v2"
+
+        # Also matches Tartarus Pro
+        layout2 = registry.get_layout_for_device("Razer Tartarus Pro")
+        assert layout2 is not None
