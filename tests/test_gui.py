@@ -3882,6 +3882,442 @@ class TestBindingEditorInteractive:
         widget.close()
 
 
+class TestBindingEditorCoverage:
+    """Additional tests for BindingEditorWidget coverage."""
+
+    @pytest.fixture
+    def qapp(self):
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication([])
+        yield app
+
+    def test_layer_dialog_custom_modifier_text(self, qapp):
+        """Test LayerDialog with custom modifier text (line 101)."""
+        from apps.gui.widgets.binding_editor import LayerDialog
+        from crates.profile_schema import Layer
+
+        # Layer with custom modifier not in the dropdown
+        layer = Layer(id="test", name="Test", bindings=[], hold_modifier_input_code="CUSTOM_KEY")
+        dialog = LayerDialog(layer=layer)
+        # Should set as editable text since not in dropdown
+        assert "CUSTOM_KEY" in dialog.modifier_combo.currentText()
+        dialog.close()
+
+    def test_layer_dialog_extract_code_from_text(self, qapp):
+        """Test LayerDialog extracting code from 'Name (CODE)' format (lines 131-136)."""
+        from apps.gui.widgets.binding_editor import LayerDialog
+
+        dialog = LayerDialog()
+        dialog.name_edit.setText("Test Layer")
+        # Simulate user typing a custom value with parentheses
+        dialog.modifier_combo.setEditText("My Key (MY_CUSTOM_CODE)")
+        name, modifier = dialog.get_layer_data()
+        assert modifier == "MY_CUSTOM_CODE"
+        dialog.close()
+
+    def test_layer_dialog_none_modifier(self, qapp):
+        """Test LayerDialog returns None for base layer text (line 136)."""
+        from apps.gui.widgets.binding_editor import LayerDialog
+
+        dialog = LayerDialog()
+        dialog.name_edit.setText("Test")
+        dialog.modifier_combo.setCurrentIndex(0)  # "(None - Base Layer)"
+        name, modifier = dialog.get_layer_data()
+        assert modifier is None
+        dialog.close()
+
+    def test_binding_dialog_with_macros(self, qapp):
+        """Test BindingDialog populates macro combo (line 180)."""
+        from apps.gui.widgets.binding_editor import BindingDialog
+        from crates.profile_schema import MacroAction
+
+        macros = [
+            MacroAction(id="m1", name="Macro 1", steps=[], repeat_count=1),
+            MacroAction(id="m2", name="Macro 2", steps=[], repeat_count=1),
+        ]
+        dialog = BindingDialog(macros=macros)
+        assert dialog.macro_combo.count() == 2
+        dialog.close()
+
+    def test_binding_dialog_load_custom_input(self, qapp):
+        """Test loading binding with input not in dropdown (line 211)."""
+        from apps.gui.widgets.binding_editor import BindingDialog
+        from crates.profile_schema import ActionType, Binding
+
+        binding = Binding(input_code="CUSTOM_INPUT", action_type=ActionType.KEY, output_keys=["A"])
+        dialog = BindingDialog(binding=binding)
+        # Should set as edit text
+        assert "CUSTOM_INPUT" in dialog.input_combo.currentText()
+        dialog.close()
+
+    def test_binding_dialog_load_macro_binding(self, qapp):
+        """Test loading binding with macro_id (lines 224-226)."""
+        from apps.gui.widgets.binding_editor import BindingDialog
+        from crates.profile_schema import ActionType, Binding, MacroAction
+
+        macros = [MacroAction(id="test_macro", name="Test", steps=[], repeat_count=1)]
+        binding = Binding(input_code="BTN_SIDE", action_type=ActionType.MACRO, macro_id="test_macro")
+        dialog = BindingDialog(binding=binding, macros=macros)
+        assert dialog.macro_combo.currentData() == "test_macro"
+        dialog.close()
+
+    def test_binding_dialog_get_binding_with_parentheses(self, qapp):
+        """Test get_binding extracts code from 'Name (CODE)' (line 247)."""
+        from apps.gui.widgets.binding_editor import BindingDialog
+
+        dialog = BindingDialog()
+        dialog.input_combo.setEditText("Side Button (BTN_SIDE)")
+        dialog.action_combo.setCurrentIndex(0)  # KEY
+        dialog.output_edit.setText("A")
+        binding = dialog.get_binding()
+        assert binding is not None
+        assert binding.input_code == "BTN_SIDE"
+        dialog.close()
+
+    def test_binding_dialog_get_macro_binding(self, qapp):
+        """Test get_binding with macro action (line 263)."""
+        from apps.gui.widgets.binding_editor import BindingDialog
+        from crates.profile_schema import ActionType, MacroAction
+
+        macros = [MacroAction(id="my_macro", name="My Macro", steps=[], repeat_count=1)]
+        dialog = BindingDialog(macros=macros)
+        dialog.input_combo.setEditText("BTN_SIDE")
+        dialog.action_combo.setCurrentIndex(2)  # MACRO
+        dialog._on_action_changed()
+        dialog.macro_combo.setCurrentIndex(0)
+        binding = dialog.get_binding()
+        assert binding is not None
+        assert binding.action_type == ActionType.MACRO
+        assert binding.macro_id == "my_macro"
+        dialog.close()
+
+    def test_macro_dialog_skip_empty_lines(self, qapp):
+        """Test MacroDialog skips empty lines (line 350)."""
+        from apps.gui.widgets.binding_editor import MacroDialog
+
+        dialog = MacroDialog()
+        dialog.name_edit.setText("Test")
+        dialog.steps_edit.setPlainText("key:A\n\n\nkey:B")  # Empty lines
+        macro = dialog.get_macro()
+        assert len(macro.steps) == 2
+        dialog.close()
+
+    def test_macro_dialog_skip_no_colon(self, qapp):
+        """Test MacroDialog skips lines without colon (line 353)."""
+        from apps.gui.widgets.binding_editor import MacroDialog
+
+        dialog = MacroDialog()
+        dialog.name_edit.setText("Test")
+        dialog.steps_edit.setPlainText("key:A\ninvalid line\nkey:B")
+        macro = dialog.get_macro()
+        assert len(macro.steps) == 2
+        dialog.close()
+
+    def test_macro_dialog_down_up_commands(self, qapp):
+        """Test MacroDialog parses down and up commands (lines 362, 364)."""
+        from apps.gui.widgets.binding_editor import MacroDialog
+        from crates.profile_schema import MacroStepType
+
+        dialog = MacroDialog()
+        dialog.name_edit.setText("Test")
+        dialog.steps_edit.setPlainText("down:CTRL\nup:CTRL")
+        macro = dialog.get_macro()
+        assert len(macro.steps) == 2
+        assert macro.steps[0].type == MacroStepType.KEY_DOWN
+        assert macro.steps[1].type == MacroStepType.KEY_UP
+        dialog.close()
+
+    def test_get_macros_with_profile(self, qapp):
+        """Test get_macros returns profile macros (line 524)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, MacroAction, Profile
+
+        widget = BindingEditorWidget()
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+            macros=[MacroAction(id="m1", name="M1", steps=[], repeat_count=1)],
+        )
+        widget.load_profile(profile)
+        macros = widget.get_macros()
+        assert len(macros) == 1
+        widget.close()
+
+    def test_get_current_layer_not_found(self, qapp):
+        """Test _get_current_layer returns None for missing layer (line 536)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, Profile
+
+        widget = BindingEditorWidget()
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+        )
+        widget.load_profile(profile)
+        # Modify combo to have invalid data
+        widget.layer_combo.setItemData(0, "nonexistent_id")
+        layer = widget._get_current_layer()
+        assert layer is None
+        widget.close()
+
+    def test_refresh_macros_no_profile(self, qapp):
+        """Test _refresh_macros with no profile (line 580)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._refresh_macros()  # Should not crash
+        widget.close()
+
+    def test_add_layer_no_profile(self, qapp):
+        """Test _add_layer with no profile (line 608)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._add_layer()  # Should not crash
+        widget.close()
+
+    def test_edit_layer_no_current_layer(self, qapp):
+        """Test _edit_layer with no current layer (line 633)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._edit_layer()  # Should not crash
+        widget.close()
+
+    def test_delete_layer_base_layer(self, qapp):
+        """Test _delete_layer won't delete base layer (line 654)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, Profile
+
+        widget = BindingEditorWidget()
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+        )
+        widget.load_profile(profile)
+        widget._delete_layer()  # Should not crash, base can't be deleted
+        assert len(profile.layers) == 1
+        widget.close()
+
+    def test_add_binding_no_layer(self, qapp):
+        """Test _add_binding with no layer (line 676)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._add_binding()  # Should not crash
+        widget.close()
+
+    def test_edit_binding_from_item(self, qapp):
+        """Test _edit_binding from double-click (lines 689-691)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog, QListWidgetItem
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding, Layer, Profile
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_SIDE", action_type=ActionType.KEY, output_keys=["A"])
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[binding], hold_modifier_input_code=None)],
+        )
+        widget.load_profile(profile)
+
+        item = widget.bindings_list.item(0)
+
+        with patch("apps.gui.widgets.binding_editor.BindingDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Rejected
+            MockDialog.return_value = mock_dialog
+            widget._edit_binding(item)
+            MockDialog.assert_called_once()
+        widget.close()
+
+    def test_edit_selected_binding(self, qapp):
+        """Test _edit_selected_binding (lines 695-699)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding, Layer, Profile
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_SIDE", action_type=ActionType.KEY, output_keys=["A"])
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[binding], hold_modifier_input_code=None)],
+        )
+        widget.load_profile(profile)
+        widget.bindings_list.setCurrentRow(0)
+
+        with patch("apps.gui.widgets.binding_editor.BindingDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Rejected
+            MockDialog.return_value = mock_dialog
+            widget._edit_selected_binding()
+            MockDialog.assert_called_once()
+        widget.close()
+
+    def test_edit_binding_dialog_accept(self, qapp):
+        """Test _edit_binding_dialog with accept (lines 703-716)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding, Layer, Profile
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_SIDE", action_type=ActionType.KEY, output_keys=["A"])
+        new_binding = Binding(input_code="BTN_SIDE", action_type=ActionType.KEY, output_keys=["B"])
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[binding], hold_modifier_input_code=None)],
+        )
+        widget.load_profile(profile)
+
+        with patch("apps.gui.widgets.binding_editor.BindingDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Accepted
+            mock_dialog.get_binding.return_value = new_binding
+            MockDialog.return_value = mock_dialog
+            widget._edit_binding_dialog(binding)
+
+        assert profile.layers[0].bindings[0].output_keys == ["B"]
+        widget.close()
+
+    def test_remove_binding_no_layer(self, qapp):
+        """Test _remove_binding with no layer (line 722)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._remove_binding()  # Should not crash
+        widget.close()
+
+    def test_add_macro_no_profile(self, qapp):
+        """Test _add_macro with no profile (line 735)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._add_macro()  # Should not crash
+        widget.close()
+
+    def test_edit_macro_from_item(self, qapp):
+        """Test _edit_macro from double-click (lines 747-749)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, MacroAction, Profile
+
+        widget = BindingEditorWidget()
+        macro = MacroAction(id="m1", name="M1", steps=[], repeat_count=1)
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+            macros=[macro],
+        )
+        widget.load_profile(profile)
+
+        item = widget.macros_list.item(0)
+
+        with patch("apps.gui.widgets.binding_editor.MacroDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Rejected
+            MockDialog.return_value = mock_dialog
+            widget._edit_macro(item)
+            MockDialog.assert_called_once()
+        widget.close()
+
+    def test_edit_selected_macro(self, qapp):
+        """Test _edit_selected_macro (lines 753-757)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, MacroAction, Profile
+
+        widget = BindingEditorWidget()
+        macro = MacroAction(id="m1", name="M1", steps=[], repeat_count=1)
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+            macros=[macro],
+        )
+        widget.load_profile(profile)
+        widget.macros_list.setCurrentRow(0)
+
+        with patch("apps.gui.widgets.binding_editor.MacroDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Rejected
+            MockDialog.return_value = mock_dialog
+            widget._edit_selected_macro()
+            MockDialog.assert_called_once()
+        widget.close()
+
+    def test_edit_macro_dialog_accept(self, qapp):
+        """Test _edit_macro_dialog with accept (lines 761-773)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, MacroAction, Profile
+
+        widget = BindingEditorWidget()
+        macro = MacroAction(id="m1", name="M1", steps=[], repeat_count=1)
+        new_macro = MacroAction(id="new_id", name="Updated", steps=[], repeat_count=2)
+        profile = Profile(
+            id="test",
+            name="Test",
+            layers=[Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)],
+            macros=[macro],
+        )
+        widget.load_profile(profile)
+
+        with patch("apps.gui.widgets.binding_editor.MacroDialog") as MockDialog:
+            mock_dialog = MagicMock()
+            mock_dialog.exec.return_value = QDialog.DialogCode.Accepted
+            mock_dialog.get_macro.return_value = new_macro
+            MockDialog.return_value = mock_dialog
+            widget._edit_macro_dialog(macro)
+
+        # Should preserve original ID
+        assert profile.macros[0].id == "m1"
+        assert profile.macros[0].name == "Updated"
+        widget.close()
+
+    def test_remove_macro_no_profile(self, qapp):
+        """Test _remove_macro with no profile (line 778)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._remove_macro()  # Should not crash
+        widget.close()
+
+
 class TestAppMatcherMethods:
     """Tests for AppMatcherWidget methods."""
 
@@ -6450,3 +6886,299 @@ class TestMainWindowDialogs:
             assert "Test Mouse" in str(call_args)
             assert "15" in str(call_args)
             window.close()
+
+
+class TestMainWindowCoverage:
+    """Additional tests for MainWindow coverage."""
+
+    @pytest.fixture
+    def qapp(self):
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication([])
+        yield app
+
+    @pytest.fixture
+    def mock_deps(self):
+        """Mock all MainWindow dependencies."""
+        mock_run_result = MagicMock()
+        mock_run_result.returncode = 0
+        with patch("apps.gui.main_window.ProfileLoader") as mock_loader, patch(
+            "apps.gui.main_window.DeviceRegistry"
+        ) as mock_registry, patch(
+            "apps.gui.main_window.OpenRazerBridge"
+        ) as mock_bridge, patch(
+            "apps.gui.main_window.subprocess.run", return_value=mock_run_result
+        ) as mock_subprocess:
+            mock_loader.return_value.list_profiles.return_value = []
+            mock_loader.return_value.get_active_profile_id.return_value = None
+            mock_registry.return_value.list_devices.return_value = []
+            mock_bridge.return_value.connect.return_value = False
+            mock_bridge.return_value.discover_devices.return_value = []
+            yield {
+                "loader": mock_loader,
+                "registry": mock_registry,
+                "bridge": mock_bridge,
+                "subprocess": mock_subprocess,
+            }
+
+    def test_openrazer_connect_success(self, qapp):
+        """Test _load_initial_data when OpenRazer connects successfully."""
+        from apps.gui.main_window import MainWindow
+
+        mock_run_result = MagicMock()
+        mock_run_result.returncode = 0
+        with patch("apps.gui.main_window.ProfileLoader") as mock_loader, patch(
+            "apps.gui.main_window.DeviceRegistry"
+        ) as mock_registry, patch(
+            "apps.gui.main_window.OpenRazerBridge"
+        ) as mock_bridge, patch(
+            "apps.gui.main_window.subprocess.run", return_value=mock_run_result
+        ):
+            mock_loader.return_value.list_profiles.return_value = []
+            mock_loader.return_value.get_active_profile_id.return_value = None
+            mock_registry.return_value.list_devices.return_value = []
+            # Make connect return True
+            mock_bridge.return_value.connect.return_value = True
+            mock_bridge.return_value.discover_devices.return_value = []
+
+            window = MainWindow()
+            # Verify razer_tab.refresh_devices was called (line 290)
+            mock_bridge.return_value.connect.assert_called_once()
+            window.close()
+
+    def test_update_ui_for_profile_with_zone_editor(self, qapp, mock_deps):
+        """Test _update_ui_for_profile restores zone colors when device selected."""
+        from apps.gui.main_window import MainWindow
+        from crates.profile_schema import (
+            DeviceConfig,
+            LightingConfig,
+            MatrixLightingConfig,
+            Profile,
+            ZoneColor,
+        )
+
+        window = MainWindow()
+
+        # Create profile with zone colors
+        zone_colors = [ZoneColor(zone_id="zone1", color=(255, 0, 0))]
+        lighting = LightingConfig(matrix=MatrixLightingConfig(enabled=True, zones=zone_colors))
+        device_config = DeviceConfig(device_id="SERIAL123", lighting=lighting)
+        profile = Profile(
+            id="test", name="Test", input_devices=[], layers=[], devices=[device_config]
+        )
+
+        # Mock zone editor with current device
+        mock_device = MagicMock()
+        mock_device.serial = "SERIAL123"
+        window.zone_editor.current_device = mock_device
+        window.zone_editor.set_zone_colors = MagicMock()
+
+        window._update_ui_for_profile(profile)
+
+        # Verify zone colors were set (lines 318-325)
+        window.zone_editor.set_zone_colors.assert_called_once()
+        window.close()
+
+    def test_update_ui_for_profile_active_label(self, qapp, mock_deps):
+        """Test _update_ui_for_profile sets active label when profile is active."""
+        from apps.gui.main_window import MainWindow
+        from crates.profile_schema import Profile
+
+        window = MainWindow()
+        profile = Profile(id="test", name="Test Profile", input_devices=[], layers=[])
+
+        # Mock active profile to match
+        window.profile_loader.get_active_profile_id = MagicMock(return_value="test")
+
+        window._update_ui_for_profile(profile)
+
+        # Verify active label includes "(Active)" (line 330)
+        assert "(Active)" in window.active_profile_label.text()
+        window.close()
+
+    def test_on_zone_config_changed_with_profile_and_device(self, qapp, mock_deps):
+        """Test _on_zone_config_changed saves zone config to profile."""
+        from apps.gui.main_window import MainWindow
+        from crates.profile_schema import Profile
+
+        window = MainWindow()
+        profile = Profile(id="test", name="Test", input_devices=[], layers=[], devices=[])
+        window.current_profile = profile
+
+        # Mock zone editor with current device and colors
+        mock_device = MagicMock()
+        mock_device.serial = "SERIAL123"
+        window.zone_editor.current_device = mock_device
+        window.zone_editor.get_zone_colors = MagicMock(
+            return_value={"zone1": (255, 0, 0), "zone2": (0, 255, 0)}
+        )
+
+        window._on_zone_config_changed()
+
+        # Verify profile was saved (lines 402-436)
+        mock_deps["loader"].return_value.save_profile.assert_called()
+        # Verify device config was added
+        assert len(profile.devices) == 1
+        assert profile.devices[0].device_id == "SERIAL123"
+        window.close()
+
+    def test_on_zone_config_changed_updates_existing_device(self, qapp, mock_deps):
+        """Test _on_zone_config_changed updates existing device config."""
+        from apps.gui.main_window import MainWindow
+        from crates.profile_schema import DeviceConfig, LightingConfig, Profile
+
+        window = MainWindow()
+        existing_config = DeviceConfig(device_id="SERIAL123", lighting=LightingConfig())
+        profile = Profile(
+            id="test", name="Test", input_devices=[], layers=[], devices=[existing_config]
+        )
+        window.current_profile = profile
+
+        mock_device = MagicMock()
+        mock_device.serial = "SERIAL123"
+        window.zone_editor.current_device = mock_device
+        window.zone_editor.get_zone_colors = MagicMock(return_value={"zone1": (255, 0, 0)})
+
+        window._on_zone_config_changed()
+
+        # Verify existing config was updated
+        assert len(profile.devices) == 1
+        assert profile.devices[0].lighting.matrix is not None
+        window.close()
+
+    def test_refresh_device_status(self, qapp, mock_deps):
+        """Test _refresh_device_status calls _update_daemon_status."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+        window._update_daemon_status = MagicMock()
+
+        window._refresh_device_status()
+
+        # Verify _update_daemon_status was called (line 447)
+        window._update_daemon_status.assert_called_once()
+        window.close()
+
+    def test_start_daemon_called_process_error(self, qapp, mock_deps):
+        """Test _start_daemon handles CalledProcessError."""
+        from apps.gui.main_window import MainWindow
+        import subprocess
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "systemctl")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._start_daemon()
+                mock_warning.assert_called_once()
+        window.close()
+
+    def test_start_daemon_file_not_found_error(self, qapp, mock_deps):
+        """Test _start_daemon handles FileNotFoundError."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = FileNotFoundError("systemctl not found")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._start_daemon()
+                mock_warning.assert_called_once()
+                # Check it mentions systemctl
+                assert "systemctl" in str(mock_warning.call_args)
+        window.close()
+
+    def test_stop_daemon_exception(self, qapp, mock_deps):
+        """Test _stop_daemon handles exception."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Test error")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._stop_daemon()
+                mock_warning.assert_called_once()
+        window.close()
+
+    def test_restart_daemon_exception(self, qapp, mock_deps):
+        """Test _restart_daemon handles exception."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Test error")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._restart_daemon()
+                mock_warning.assert_called_once()
+        window.close()
+
+    def test_toggle_autostart_enable(self, qapp, mock_deps):
+        """Test _toggle_autostart calls _enable_autostart when enabled."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+        window._enable_autostart = MagicMock()
+        window._disable_autostart = MagicMock()
+
+        window._toggle_autostart(True)
+
+        window._enable_autostart.assert_called_once()
+        window._disable_autostart.assert_not_called()
+        window.close()
+
+    def test_toggle_autostart_disable(self, qapp, mock_deps):
+        """Test _toggle_autostart calls _disable_autostart when disabled."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+        window._enable_autostart = MagicMock()
+        window._disable_autostart = MagicMock()
+
+        window._toggle_autostart(False)
+
+        window._disable_autostart.assert_called_once()
+        window._enable_autostart.assert_not_called()
+        window.close()
+
+    def test_enable_autostart_exception(self, qapp, mock_deps):
+        """Test _enable_autostart handles exception."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Test error")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._enable_autostart()
+                mock_warning.assert_called_once()
+        window.close()
+
+    def test_disable_autostart_exception(self, qapp, mock_deps):
+        """Test _disable_autostart handles exception."""
+        from apps.gui.main_window import MainWindow
+
+        window = MainWindow()
+
+        with patch("apps.gui.main_window.subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Test error")
+            from PySide6.QtWidgets import QMessageBox
+
+            with patch.object(QMessageBox, "warning") as mock_warning:
+                window._disable_autostart()
+                mock_warning.assert_called_once()
+        window.close()
