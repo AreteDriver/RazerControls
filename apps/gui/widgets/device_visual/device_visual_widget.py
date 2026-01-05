@@ -5,6 +5,7 @@ from typing import Any
 
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt, Signal
 from PySide6.QtGui import (
+    QAction,
     QBrush,
     QColor,
     QMouseEvent,
@@ -12,7 +13,12 @@ from PySide6.QtGui import (
     QPen,
     QPolygonF,
 )
-from PySide6.QtWidgets import QSizePolicy, QWidget
+from PySide6.QtWidgets import (
+    QColorDialog,
+    QMenu,
+    QSizePolicy,
+    QWidget,
+)
 
 from crates.device_layouts import (
     ButtonShape,
@@ -63,6 +69,7 @@ class DeviceVisualWidget(QWidget):
         self._hovered_button: str | None = None
         self._selected_button: str | None = None
         self._zone_colors: dict[str, QColor] = {}
+        self._button_bindings: dict[str, str] = {}  # button_id -> key binding
 
         # Enable mouse tracking for hover effects
         self.setMouseTracking(True)
@@ -345,6 +352,84 @@ class DeviceVisualWidget(QWidget):
 
         elif event.button() == Qt.MouseButton.RightButton:
             self.button_right_clicked.emit(button.id)
+            self._show_context_menu(event.globalPosition().toPoint(), button)
+
+    def _show_context_menu(self, pos: Any, button: ButtonShape) -> None:
+        """Show context menu for button configuration."""
+        menu = QMenu(self)
+
+        if button.is_zone:
+            # Zone-specific actions
+            set_color_action = QAction("Set Zone Color...", self)
+            set_color_action.triggered.connect(lambda: self._set_zone_color(button.id))
+            menu.addAction(set_color_action)
+
+            clear_color_action = QAction("Reset Zone Color", self)
+            clear_color_action.triggered.connect(lambda: self._clear_zone_color(button.id))
+            menu.addAction(clear_color_action)
+        else:
+            # Button-specific actions
+            configure_action = QAction("Configure Binding...", self)
+            configure_action.triggered.connect(lambda: self._configure_binding(button))
+            menu.addAction(configure_action)
+
+            # Show current binding if set
+            current_binding = self._button_bindings.get(button.id)
+            if current_binding:
+                menu.addSeparator()
+                current_label = QAction(f"Current: {current_binding}", self)
+                current_label.setEnabled(False)
+                menu.addAction(current_label)
+
+                clear_action = QAction("Clear Binding", self)
+                clear_action.triggered.connect(lambda: self._clear_binding(button.id))
+                menu.addAction(clear_action)
+
+        menu.exec(pos)
+
+    def _set_zone_color(self, zone_id: str) -> None:
+        """Open color picker for zone."""
+        current_color = self._zone_colors.get(zone_id, QColor(0, 200, 100))
+        color = QColorDialog.getColor(current_color, self, f"Set Color for {zone_id}")
+        if color.isValid():
+            self.set_zone_color(zone_id, color)
+            self.zone_clicked.emit(zone_id)
+
+    def _clear_zone_color(self, zone_id: str) -> None:
+        """Reset zone to default color."""
+        if zone_id in self._zone_colors:
+            del self._zone_colors[zone_id]
+            self.update()
+
+    def _configure_binding(self, button: ButtonShape) -> None:
+        """Open binding configuration dialog."""
+        from apps.gui.widgets.device_visual.button_binding_dialog import (
+            ButtonBindingDialog,
+        )
+
+        dialog = ButtonBindingDialog(button, self._button_bindings.get(button.id), self)
+        if dialog.exec():
+            binding = dialog.get_binding()
+            if binding:
+                self._button_bindings[button.id] = binding
+            elif button.id in self._button_bindings:
+                del self._button_bindings[button.id]
+            self.update()
+
+    def _clear_binding(self, button_id: str) -> None:
+        """Clear binding for a button."""
+        if button_id in self._button_bindings:
+            del self._button_bindings[button_id]
+            self.update()
+
+    def get_button_bindings(self) -> dict[str, str]:
+        """Get all button bindings."""
+        return self._button_bindings.copy()
+
+    def set_button_bindings(self, bindings: dict[str, str]) -> None:
+        """Set button bindings from a dict."""
+        self._button_bindings = bindings.copy()
+        self.update()
 
     def leaveEvent(self, event: Any) -> None:
         """Clear hover state when mouse leaves."""

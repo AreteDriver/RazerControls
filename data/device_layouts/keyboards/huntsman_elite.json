@@ -1,0 +1,231 @@
+{
+  "id": "razer_huntsman_elite",
+  "name": "Razer Huntsman Elite",
+  "category": "keyboard",
+  "device_name_patterns": [
+    ".*huntsman.*elite.*",
+    ".*Huntsman Elite.*",
+    ".*huntsman.*v2.*",
+    ".*Huntsman V2.*"
+  ],
+  "base_width": 480,
+  "base_height": 200,
+  "outline_path": [
+    [0.0, 0.0],
+    [1.0, 0.0],
+    [1.0, 0.78],
+    [0.0, 0.78]
+  ],
+  "buttons": [
+    {
+      "id": "zone_escape",
+      "label": "ESC",
+      "x": 0.02,
+      "y": 0.06,
+      "width": 0.04,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_function",
+      "label": "F1-F12",
+      "x": 0.10,
+      "y": 0.06,
+      "width": 0.52,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_print_scroll_pause",
+      "label": "Print/Scroll/Pause",
+      "x": 0.64,
+      "y": 0.06,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_media_keys",
+      "label": "Media",
+      "x": 0.78,
+      "y": 0.02,
+      "width": 0.12,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_volume_wheel",
+      "label": "Volume",
+      "x": 0.92,
+      "y": 0.02,
+      "width": 0.06,
+      "height": 0.14,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numbers",
+      "label": "Number Row",
+      "x": 0.02,
+      "y": 0.18,
+      "width": 0.60,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_insert_home_pgup",
+      "label": "Ins/Home/PgUp",
+      "x": 0.64,
+      "y": 0.18,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_top",
+      "label": "NumLk/÷/×/-",
+      "x": 0.78,
+      "y": 0.18,
+      "width": 0.20,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_qwerty",
+      "label": "QWERTY Row",
+      "x": 0.02,
+      "y": 0.30,
+      "width": 0.60,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_del_end_pgdn",
+      "label": "Del/End/PgDn",
+      "x": 0.64,
+      "y": 0.30,
+      "width": 0.12,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_789",
+      "label": "7/8/9/+",
+      "x": 0.78,
+      "y": 0.30,
+      "width": 0.20,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_home_row",
+      "label": "Home Row",
+      "x": 0.02,
+      "y": 0.42,
+      "width": 0.60,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_456",
+      "label": "4/5/6",
+      "x": 0.78,
+      "y": 0.42,
+      "width": 0.15,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_bottom_row",
+      "label": "Bottom Row",
+      "x": 0.02,
+      "y": 0.54,
+      "width": 0.60,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_arrows",
+      "label": "Arrows",
+      "x": 0.64,
+      "y": 0.54,
+      "width": 0.12,
+      "height": 0.14,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_123",
+      "label": "1/2/3/Enter",
+      "x": 0.78,
+      "y": 0.54,
+      "width": 0.20,
+      "height": 0.10,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_spacebar",
+      "label": "Spacebar",
+      "x": 0.18,
+      "y": 0.66,
+      "width": 0.28,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_numpad_0",
+      "label": "0/.",
+      "x": 0.78,
+      "y": 0.66,
+      "width": 0.20,
+      "height": 0.06,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_logo",
+      "label": "Logo",
+      "x": 0.02,
+      "y": 0.02,
+      "width": 0.05,
+      "height": 0.04,
+      "shape_type": "ellipse",
+      "is_zone": true
+    },
+    {
+      "id": "zone_underglow",
+      "label": "Underglow",
+      "x": 0.0,
+      "y": 0.74,
+      "width": 1.0,
+      "height": 0.04,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_wrist_rest",
+      "label": "Wrist Rest",
+      "x": 0.0,
+      "y": 0.80,
+      "width": 1.0,
+      "height": 0.20,
+      "shape_type": "rect",
+      "is_zone": true
+    }
+  ]
+}

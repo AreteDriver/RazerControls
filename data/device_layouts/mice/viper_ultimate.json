@@ -1,0 +1,120 @@
+{
+  "id": "razer_viper_ultimate",
+  "name": "Razer Viper Ultimate",
+  "category": "mouse",
+  "device_name_patterns": [
+    ".*viper.*ultimate.*",
+    ".*Viper Ultimate.*",
+    ".*viper.*v2.*",
+    ".*Viper V2.*"
+  ],
+  "base_width": 66,
+  "base_height": 128,
+  "outline_path": [
+    [0.5, 0.0],
+    [0.80, 0.06],
+    [0.95, 0.18],
+    [1.0, 0.40],
+    [0.98, 0.60],
+    [0.90, 0.80],
+    [0.75, 0.94],
+    [0.5, 1.0],
+    [0.25, 0.94],
+    [0.10, 0.80],
+    [0.02, 0.60],
+    [0.0, 0.40],
+    [0.05, 0.18],
+    [0.20, 0.06]
+  ],
+  "buttons": [
+    {
+      "id": "left_click",
+      "label": "Left Click",
+      "x": 0.05,
+      "y": 0.02,
+      "width": 0.42,
+      "height": 0.35,
+      "shape_type": "rect",
+      "input_code": "BTN_LEFT"
+    },
+    {
+      "id": "right_click",
+      "label": "Right Click",
+      "x": 0.53,
+      "y": 0.02,
+      "width": 0.42,
+      "height": 0.35,
+      "shape_type": "rect",
+      "input_code": "BTN_RIGHT"
+    },
+    {
+      "id": "scroll_wheel",
+      "label": "Scroll",
+      "x": 0.38,
+      "y": 0.10,
+      "width": 0.24,
+      "height": 0.18,
+      "shape_type": "ellipse",
+      "input_code": "BTN_MIDDLE"
+    },
+    {
+      "id": "dpi_button",
+      "label": "DPI",
+      "x": 0.40,
+      "y": 0.40,
+      "width": 0.20,
+      "height": 0.06,
+      "shape_type": "rect"
+    },
+    {
+      "id": "side_forward",
+      "label": "M5",
+      "x": 0.0,
+      "y": 0.38,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_FORWARD"
+    },
+    {
+      "id": "side_back",
+      "label": "M4",
+      "x": 0.0,
+      "y": 0.50,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_BACK"
+    },
+    {
+      "id": "right_side_forward",
+      "label": "M7",
+      "x": 0.90,
+      "y": 0.38,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_EXTRA"
+    },
+    {
+      "id": "right_side_back",
+      "label": "M6",
+      "x": 0.90,
+      "y": 0.50,
+      "width": 0.10,
+      "height": 0.10,
+      "shape_type": "rect",
+      "input_code": "BTN_SIDE"
+    },
+    {
+      "id": "logo_zone",
+      "label": "Logo",
+      "x": 0.32,
+      "y": 0.62,
+      "width": 0.36,
+      "height": 0.14,
+      "shape_type": "ellipse",
+      "is_zone": true
+    }
+  ]
+}

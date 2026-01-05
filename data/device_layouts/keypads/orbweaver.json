@@ -1,0 +1,274 @@
+{
+  "id": "razer_orbweaver",
+  "name": "Razer Orbweaver Chroma",
+  "category": "keypad",
+  "device_name_patterns": [
+    ".*orbweaver.*",
+    ".*Orbweaver.*"
+  ],
+  "base_width": 190,
+  "base_height": 210,
+  "outline_path": [
+    [0.05, 0.0],
+    [0.95, 0.0],
+    [1.0, 0.05],
+    [1.0, 0.60],
+    [0.85, 0.65],
+    [0.85, 1.0],
+    [0.15, 1.0],
+    [0.15, 0.65],
+    [0.0, 0.60],
+    [0.0, 0.05]
+  ],
+  "buttons": [
+    {
+      "id": "key_01",
+      "label": "01",
+      "x": 0.10,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_ESC"
+    },
+    {
+      "id": "key_02",
+      "label": "02",
+      "x": 0.23,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_1"
+    },
+    {
+      "id": "key_03",
+      "label": "03",
+      "x": 0.36,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_2"
+    },
+    {
+      "id": "key_04",
+      "label": "04",
+      "x": 0.49,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_3"
+    },
+    {
+      "id": "key_05",
+      "label": "05",
+      "x": 0.62,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_4"
+    },
+    {
+      "id": "key_06",
+      "label": "06",
+      "x": 0.75,
+      "y": 0.05,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_5"
+    },
+    {
+      "id": "key_07",
+      "label": "07",
+      "x": 0.12,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_TAB"
+    },
+    {
+      "id": "key_08",
+      "label": "08",
+      "x": 0.25,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_Q"
+    },
+    {
+      "id": "key_09",
+      "label": "09",
+      "x": 0.38,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_W"
+    },
+    {
+      "id": "key_10",
+      "label": "10",
+      "x": 0.51,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_E"
+    },
+    {
+      "id": "key_11",
+      "label": "11",
+      "x": 0.64,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_R"
+    },
+    {
+      "id": "key_12",
+      "label": "12",
+      "x": 0.77,
+      "y": 0.16,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_T"
+    },
+    {
+      "id": "key_13",
+      "label": "13",
+      "x": 0.14,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_CAPSLOCK"
+    },
+    {
+      "id": "key_14",
+      "label": "14",
+      "x": 0.27,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_A"
+    },
+    {
+      "id": "key_15",
+      "label": "15",
+      "x": 0.40,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_S"
+    },
+    {
+      "id": "key_16",
+      "label": "16",
+      "x": 0.53,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_D"
+    },
+    {
+      "id": "key_17",
+      "label": "17",
+      "x": 0.66,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_F"
+    },
+    {
+      "id": "key_18",
+      "label": "18",
+      "x": 0.79,
+      "y": 0.27,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_G"
+    },
+    {
+      "id": "key_19",
+      "label": "19",
+      "x": 0.16,
+      "y": 0.38,
+      "width": 0.13,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_LEFTSHIFT"
+    },
+    {
+      "id": "key_20",
+      "label": "20",
+      "x": 0.31,
+      "y": 0.38,
+      "width": 0.11,
+      "height": 0.09,
+      "shape_type": "rect",
+      "input_code": "KEY_Z"
+    },
+    {
+      "id": "thumbstick",
+      "label": "Stick",
+      "x": 0.35,
+      "y": 0.68,
+      "width": 0.18,
+      "height": 0.18,
+      "shape_type": "ellipse"
+    },
+    {
+      "id": "thumb_key",
+      "label": "Space",
+      "x": 0.58,
+      "y": 0.72,
+      "width": 0.22,
+      "height": 0.12,
+      "shape_type": "rect",
+      "input_code": "KEY_SPACE"
+    },
+    {
+      "id": "thumb_alt",
+      "label": "Alt",
+      "x": 0.20,
+      "y": 0.72,
+      "width": 0.12,
+      "height": 0.12,
+      "shape_type": "rect",
+      "input_code": "KEY_LEFTALT"
+    },
+    {
+      "id": "zone_keys",
+      "label": "Key Lighting",
+      "x": 0.10,
+      "y": 0.05,
+      "width": 0.78,
+      "height": 0.45,
+      "shape_type": "rect",
+      "is_zone": true
+    },
+    {
+      "id": "zone_thumbpad",
+      "label": "Thumb Lighting",
+      "x": 0.20,
+      "y": 0.68,
+      "width": 0.60,
+      "height": 0.20,
+      "shape_type": "rect",
+      "is_zone": true
+    }
+  ]
+}
