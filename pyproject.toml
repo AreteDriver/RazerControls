@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "razer-control-center"
-version = "1.9.1"
+version = "1.9.2"
 description = "Razer Control Center for Linux - button remapping, macros, RGB lighting, and DPI control"
 readme = "README.md"
 license = "MIT"
