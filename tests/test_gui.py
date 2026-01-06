@@ -4716,6 +4716,8 @@ class TestBindingEditorCoverage:
         mock_registry = MagicMock()
         mock_registry._layouts = {"test_layout": mock_layout}
 
+        # Clear existing items and add our test item
+        widget.device_combo.clear()
         widget.device_combo.addItem("Test Device", "test_layout")
         widget.device_combo.setCurrentIndex(0)
 
@@ -4922,12 +4924,12 @@ class TestBindingEditorCoverage:
         widget.close()
 
     def test_format_binding_short_disable(self, qapp):
-        """Test _format_binding_short with DISABLE action (line 712-713)."""
+        """Test _format_binding_short with DISABLED action (line 712-713)."""
         from apps.gui.widgets.binding_editor import BindingEditorWidget
         from crates.profile_schema import ActionType, Binding
 
         widget = BindingEditorWidget()
-        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.DISABLE)
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.DISABLED)
         result = widget._format_binding_short(binding)
         assert result == "Off"
         widget.close()

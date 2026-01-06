@@ -206,6 +206,23 @@ class TestDeviceLayout:
         assert data["base_height"] == 200
         assert len(data["buttons"]) == 1
 
+    def test_to_dict_with_image_path(self):
+        """Test DeviceLayout serialization with image_path (line 136)."""
+        layout = DeviceLayout(
+            id="test_layout",
+            name="Test Layout",
+            category=DeviceCategory.MOUSE,
+            device_name_patterns=[".*test.*"],
+            base_width=100,
+            base_height=200,
+            outline_path=[(0, 0), (1, 0), (1, 1), (0, 1)],
+            buttons=[],
+            image_path="images/test_device.png",
+        )
+        data = layout.to_dict()
+
+        assert data["image_path"] == "images/test_device.png"
+
 
 class TestFallbackLayouts:
     """Tests for fallback layout generators."""
