@@ -4681,6 +4681,279 @@ class TestBindingEditorCoverage:
         widget._remove_macro()  # Should not crash
         widget.close()
 
+    def test_on_device_combo_changed_header_item(self, qapp):
+        """Test _on_device_combo_changed with header item (line 580-582)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        # Add header item
+        widget.device_combo.addItem("--- Select Device ---", "---header")
+        widget.device_combo.setCurrentIndex(0)
+        widget._on_device_combo_changed()  # Should early return
+        widget.close()
+
+    def test_on_device_combo_changed_valid_layout(self, qapp):
+        """Test _on_device_combo_changed with valid layout (line 584-590)."""
+        from unittest.mock import MagicMock, patch
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.device_layouts.schema import ButtonShape, DeviceCategory, DeviceLayout
+
+        widget = BindingEditorWidget()
+
+        # Create mock layout
+        mock_layout = DeviceLayout(
+            id="test_layout",
+            name="Test Device",
+            category=DeviceCategory.MOUSE,
+            device_name_patterns=["test"],
+            base_width=100,
+            base_height=100,
+            outline_path=[(0, 0), (1, 0), (1, 1), (0, 1)],
+            buttons=[ButtonShape(id="btn1", x=0, y=0, width=0.5, height=0.5, label="B1", input_code="BTN_LEFT")],
+        )
+
+        mock_registry = MagicMock()
+        mock_registry._layouts = {"test_layout": mock_layout}
+
+        widget.device_combo.addItem("Test Device", "test_layout")
+        widget.device_combo.setCurrentIndex(0)
+
+        with patch("apps.gui.widgets.binding_editor.DeviceLayoutRegistry", return_value=mock_registry):
+            widget._on_device_combo_changed()
+
+        widget.close()
+
+    def test_on_device_button_clicked_no_layer(self, qapp):
+        """Test _on_device_button_clicked with no layer (line 622-624)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._on_device_button_clicked("btn1", "BTN_LEFT")  # Should early return
+        widget.close()
+
+    def test_on_device_button_clicked_existing_binding(self, qapp):
+        """Test _on_device_button_clicked with existing binding (line 626-640)."""
+        from unittest.mock import patch
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding, Layer, Profile
+
+        widget = BindingEditorWidget()
+
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.KEY, output_keys=["a"])
+        layer = Layer(id="base", name="Base", bindings=[binding], hold_modifier_input_code=None)
+        profile = Profile(id="test", name="Test", description="", layers=[layer])
+
+        widget.current_profile = profile
+        widget.layer_combo.addItem("Base", "base")
+        widget.layer_combo.setCurrentIndex(0)
+
+        # Mock the edit dialog to return Rejected
+        with patch.object(widget, "_edit_binding_dialog"):
+            widget._on_device_button_clicked("btn1", "BTN_LEFT")
+
+        widget.close()
+
+    def test_on_device_button_clicked_new_binding(self, qapp):
+        """Test _on_device_button_clicked creating new binding (line 636-638)."""
+        from unittest.mock import patch
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import Layer, Profile
+
+        widget = BindingEditorWidget()
+
+        layer = Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)
+        profile = Profile(id="test", name="Test", description="", layers=[layer])
+
+        widget.current_profile = profile
+        widget.layer_combo.addItem("Base", "base")
+        widget.layer_combo.setCurrentIndex(0)
+
+        with patch.object(widget, "_add_binding_for_input"):
+            widget._on_device_button_clicked("btn1", "BTN_LEFT")
+
+        widget.close()
+
+    def test_on_device_button_right_clicked(self, qapp):
+        """Test _on_device_button_right_clicked (line 645)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget._on_device_button_right_clicked("btn1")  # Just pass
+        widget.close()
+
+    def test_on_binding_selected_no_layout(self, qapp):
+        """Test _on_binding_selected with no layout (line 658-663)."""
+
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QListWidgetItem
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.KEY, output_keys=["a"])
+        item = QListWidgetItem("Test")
+        item.setData(Qt.ItemDataRole.UserRole, binding)
+
+        widget._on_binding_selected(item, None)
+        widget.close()
+
+    def test_on_binding_selected_with_matching_button(self, qapp):
+        """Test _on_binding_selected with matching button in layout (line 660-663)."""
+
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QListWidgetItem
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.device_layouts.schema import ButtonShape, DeviceCategory, DeviceLayout
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+
+        # Set up layout with matching button
+        mock_layout = DeviceLayout(
+            id="test",
+            name="Test",
+            category=DeviceCategory.MOUSE,
+            device_name_patterns=["test"],
+            base_width=100,
+            base_height=100,
+            outline_path=[(0, 0), (1, 0), (1, 1), (0, 1)],
+            buttons=[ButtonShape(id="btn1", x=0, y=0, width=0.5, height=0.5, label="B1", input_code="BTN_LEFT")],
+        )
+        widget.device_visual._layout = mock_layout
+
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.KEY, output_keys=["a"])
+        item = QListWidgetItem("Test")
+        item.setData(Qt.ItemDataRole.UserRole, binding)
+
+        widget._on_binding_selected(item, None)
+        widget.close()
+
+    def test_add_binding_for_input_no_layer(self, qapp):
+        """Test _add_binding_for_input with no layer (line 669-671)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        widget._add_binding_for_input("BTN_LEFT")  # Should early return
+        widget.close()
+
+    def test_add_binding_for_input_dialog_accepted(self, qapp):
+        """Test _add_binding_for_input dialog flow (line 674-687)."""
+        from unittest.mock import MagicMock, patch
+
+        from PySide6.QtWidgets import QDialog
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding, Layer, Profile
+
+        widget = BindingEditorWidget()
+
+        layer = Layer(id="base", name="Base", bindings=[], hold_modifier_input_code=None)
+        profile = Profile(id="test", name="Test", description="", layers=[layer])
+
+        widget.current_profile = profile
+        widget.layer_combo.addItem("Base", "base")
+        widget.layer_combo.setCurrentIndex(0)
+
+        # Mock dialog
+        mock_binding = Binding(input_code="BTN_LEFT", action_type=ActionType.KEY, output_keys=["a"])
+        mock_dialog = MagicMock()
+        mock_dialog.exec.return_value = QDialog.DialogCode.Accepted
+        mock_dialog.get_binding.return_value = mock_binding
+
+        with patch("apps.gui.widgets.binding_editor.BindingDialog", return_value=mock_dialog):
+            widget._add_binding_for_input("BTN_LEFT")
+
+        assert len(layer.bindings) == 1
+        widget.close()
+
+    def test_on_binding_selected_item_no_binding(self, qapp):
+        """Test _on_binding_selected with item that has no binding data (line 655)."""
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QListWidgetItem
+
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+
+        widget = BindingEditorWidget()
+        item = QListWidgetItem("Test")
+        item.setData(Qt.ItemDataRole.UserRole, None)  # No binding data
+
+        widget._on_binding_selected(item, None)  # Should early return at line 655
+        widget.close()
+
+    def test_format_binding_short_chord(self, qapp):
+        """Test _format_binding_short with CHORD action (line 706-707)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.CHORD, output_keys=["ctrl", "shift", "a"])
+        result = widget._format_binding_short(binding)
+        assert result == "ctrl+shift"
+        widget.close()
+
+    def test_format_binding_short_macro(self, qapp):
+        """Test _format_binding_short with MACRO action (line 708-709)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.MACRO, macro_id="test_macro")
+        result = widget._format_binding_short(binding)
+        assert result == "Macro"
+        widget.close()
+
+    def test_format_binding_short_passthrough(self, qapp):
+        """Test _format_binding_short with PASSTHROUGH action (line 710-711)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.PASSTHROUGH)
+        result = widget._format_binding_short(binding)
+        assert result == "Pass"
+        widget.close()
+
+    def test_format_binding_short_disable(self, qapp):
+        """Test _format_binding_short with DISABLE action (line 712-713)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.DISABLE)
+        result = widget._format_binding_short(binding)
+        assert result == "Off"
+        widget.close()
+
+    def test_edit_binding_dialog_no_layer(self, qapp):
+        """Test _edit_binding_dialog with no layer (line 906)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import ActionType, Binding
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        binding = Binding(input_code="BTN_LEFT", action_type=ActionType.KEY, output_keys=["a"])
+        widget._edit_binding_dialog(binding)  # Should early return
+        widget.close()
+
+    def test_edit_macro_dialog_no_profile(self, qapp):
+        """Test _edit_macro_dialog with no profile (line 963)."""
+        from apps.gui.widgets.binding_editor import BindingEditorWidget
+        from crates.profile_schema import MacroAction, MacroStep, MacroStepType
+
+        widget = BindingEditorWidget()
+        widget.current_profile = None
+        macro = MacroAction(id="m1", name="Test", steps=[MacroStep(type=MacroStepType.KEY_PRESS, key="a")])
+        widget._edit_macro_dialog(macro)  # Should early return
+        widget.close()
+
 
 class TestAppMatcherMethods:
     """Tests for AppMatcherWidget methods."""

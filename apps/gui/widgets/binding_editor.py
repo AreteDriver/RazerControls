@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from apps.gui.widgets.device_visual.device_visual_widget import DeviceVisualWidget
+from crates.device_layouts import DeviceLayoutRegistry
 from crates.keycode_map import evdev_code_to_schema
 from crates.profile_schema import (
     ActionType,
@@ -30,8 +32,6 @@ from crates.profile_schema import (
     MacroStepType,
     Profile,
 )
-from apps.gui.widgets.device_visual.device_visual_widget import DeviceVisualWidget
-from crates.device_layouts import DeviceLayoutRegistry
 
 # Common input buttons for quick selection
 COMMON_INPUTS = {

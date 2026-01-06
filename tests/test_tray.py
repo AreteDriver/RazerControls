@@ -90,6 +90,30 @@ class TestHotkeyBackendBase:
         backend = TestBackend()
         assert backend.name == "TestBackend"
 
+    def test_abstract_methods_callable(self):
+        """Test that abstract method implementations work."""
+        from apps.tray.hotkey_backends import HotkeyBackend
+
+        class TestBackend(HotkeyBackend):
+            def is_available(self):
+                return True
+
+            def register_shortcuts(self, shortcuts):
+                return True
+
+            def start(self):
+                pass
+
+            def stop(self):
+                pass
+
+        backend = TestBackend()
+        # Call all the abstract method implementations
+        assert backend.is_available() is True
+        assert backend.register_shortcuts({"test": "shortcut"}) is True
+        backend.start()
+        backend.stop()
+
 
 class TestPortalGlobalShortcuts:
     """Tests for PortalGlobalShortcuts backend."""
