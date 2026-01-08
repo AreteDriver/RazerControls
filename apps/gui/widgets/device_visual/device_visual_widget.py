@@ -188,7 +188,7 @@ class DeviceVisualWidget(QWidget):
 
         # Calculate scaling to fit widget
         widget_rect = self.rect()
-        padding = 10
+        padding = 4  # Minimal padding
         available_width = widget_rect.width() - 2 * padding
         available_height = widget_rect.height() - 2 * padding
 

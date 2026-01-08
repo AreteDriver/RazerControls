@@ -228,6 +228,23 @@ class MainWindow(QMainWindow):
     def _setup_device_view_tab(self):
         """Set up the device view tab with visual device layout."""
         layout = QVBoxLayout(self.device_view_tab)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(4)
+
+        # Top bar with device selector
+        from PySide6.QtWidgets import QComboBox
+
+        top_bar = QHBoxLayout()
+        top_bar.setSpacing(8)
+
+        top_bar.addWidget(QLabel("Device:"))
+        self.device_view_combo = QComboBox()
+        self.device_view_combo.setMinimumWidth(200)
+        self.device_view_combo.currentIndexChanged.connect(self._on_device_view_changed)
+        top_bar.addWidget(self.device_view_combo)
+        top_bar.addStretch()
+
+        layout.addLayout(top_bar)
 
         # Device visual widget
         self.device_visual = DeviceVisualWidget()
@@ -235,13 +252,18 @@ class MainWindow(QMainWindow):
         self.device_visual.zone_clicked.connect(self._on_device_zone_clicked)
         layout.addWidget(self.device_visual, 1)
 
-        # Info label
-        info = QLabel(
-            "Select a device from Lighting & DPI tab to see its visual layout.\n"
-            "Click buttons to configure bindings, click zones to set RGB colors."
-        )
-        info.setStyleSheet("color: #888888; padding: 8px;")
-        layout.addWidget(info)
+    def _on_device_view_changed(self, index: int):
+        """Handle device selection in Device View tab."""
+        if index < 0:
+            return
+        device = self.device_view_combo.itemData(index)
+        if device:
+            self._current_razer_device = device.serial
+            self.device_visual.set_device(
+                device.name,
+                device.device_type,
+                device.matrix_cols if hasattr(device, "matrix_cols") else None,
+            )
 
     def _on_device_button_clicked(self, button_id: str, input_code: str):
         """Handle button click on device visual."""
@@ -338,8 +360,18 @@ class MainWindow(QMainWindow):
         if self.openrazer.connect():
             self.statusbar.showMessage("Connected to OpenRazer daemon", 3000)
             self.razer_tab.refresh_devices()
+            self._populate_device_view_combo()
         else:
             self.statusbar.showMessage("OpenRazer daemon not available", 5000)
+
+    def _populate_device_view_combo(self):
+        """Populate the device view combo with discovered devices."""
+        self.device_view_combo.clear()
+        devices = self.openrazer.discover_devices()
+        for device in devices:
+            self.device_view_combo.addItem(device.name, device)
+        if devices:
+            self.device_view_combo.setCurrentIndex(0)
 
     def _on_profile_selected(self, profile_id: str):
         """Handle profile selection."""

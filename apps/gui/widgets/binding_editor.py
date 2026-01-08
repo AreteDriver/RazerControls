@@ -419,63 +419,74 @@ class BindingEditorWidget(QWidget):
     def _setup_bindings_tab(self, widget):
         """Set up the bindings tab with device visual."""
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(4)
 
-        # Device selector at top
-        device_layout = QHBoxLayout()
-        device_layout.addWidget(QLabel("Device:"))
+        # Top bar: Device and Layer selectors
+        top_bar = QHBoxLayout()
+        top_bar.setSpacing(8)
+
+        top_bar.addWidget(QLabel("Device:"))
         self.device_combo = QComboBox()
+        self.device_combo.setMinimumWidth(150)
         self._populate_device_combo()
         self.device_combo.currentIndexChanged.connect(self._on_device_combo_changed)
-        device_layout.addWidget(self.device_combo, 1)
-        layout.addLayout(device_layout)
+        top_bar.addWidget(self.device_combo)
 
-        # Layer selector
-        layer_layout = QHBoxLayout()
-        layer_layout.addWidget(QLabel("Layer:"))
+        top_bar.addWidget(QLabel("Layer:"))
         self.layer_combo = QComboBox()
+        self.layer_combo.setMinimumWidth(120)
         self.layer_combo.currentIndexChanged.connect(self._on_layer_changed)
-        layer_layout.addWidget(self.layer_combo, 1)
+        top_bar.addWidget(self.layer_combo)
 
         self.edit_layer_btn = QPushButton("Edit")
+        self.edit_layer_btn.setMaximumWidth(50)
         self.edit_layer_btn.clicked.connect(self._edit_layer)
         self.edit_layer_btn.setToolTip("Edit layer name and hold modifier (Hypershift)")
-        layer_layout.addWidget(self.edit_layer_btn)
+        top_bar.addWidget(self.edit_layer_btn)
 
-        self.add_layer_btn = QPushButton("+ Layer")
+        self.add_layer_btn = QPushButton("+")
+        self.add_layer_btn.setMaximumWidth(30)
         self.add_layer_btn.clicked.connect(self._add_layer)
         self.add_layer_btn.setToolTip("Add a new layer with Hypershift support")
-        layer_layout.addWidget(self.add_layer_btn)
+        top_bar.addWidget(self.add_layer_btn)
 
-        self.del_layer_btn = QPushButton("Delete")
+        self.del_layer_btn = QPushButton("−")
+        self.del_layer_btn.setMaximumWidth(30)
         self.del_layer_btn.clicked.connect(self._delete_layer)
-        layer_layout.addWidget(self.del_layer_btn)
+        self.del_layer_btn.setToolTip("Delete current layer")
+        top_bar.addWidget(self.del_layer_btn)
 
-        layout.addLayout(layer_layout)
+        top_bar.addStretch()
 
-        # Layer info label
+        # Layer info (Hypershift key indicator)
         self.layer_info_label = QLabel("")
-        self.layer_info_label.setStyleSheet("color: #44d72c; font-size: 11px; padding: 2px;")
-        layout.addWidget(self.layer_info_label)
+        self.layer_info_label.setStyleSheet("color: #44d72c; font-size: 11px;")
+        top_bar.addWidget(self.layer_info_label)
+
+        layout.addLayout(top_bar)
 
         # Splitter: Device visual on left, bindings list on right
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Left side: Device visual
         device_panel = QWidget()
-        device_layout = QVBoxLayout(device_panel)
-        device_layout.setContentsMargins(0, 0, 0, 0)
+        device_panel_layout = QVBoxLayout(device_panel)
+        device_panel_layout.setContentsMargins(0, 0, 0, 0)
+        device_panel_layout.setSpacing(2)
 
         # Device info label
-        self.device_info_label = QLabel("Click a button to add/edit its binding")
-        self.device_info_label.setStyleSheet("color: #888; font-size: 11px;")
-        device_layout.addWidget(self.device_info_label)
+        self.device_info_label = QLabel("Click a button to configure")
+        self.device_info_label.setStyleSheet("color: #888; font-size: 10px;")
+
+        device_panel_layout.addWidget(self.device_info_label)
 
         # Device visual widget
         self.device_visual = DeviceVisualWidget()
         self.device_visual.button_clicked.connect(self._on_device_button_clicked)
         self.device_visual.button_right_clicked.connect(self._on_device_button_right_clicked)
-        self.device_visual.setMinimumWidth(200)
-        device_layout.addWidget(self.device_visual, 1)
+        self.device_visual.setMinimumWidth(180)
+        device_panel_layout.addWidget(self.device_visual, 1)
 
         splitter.addWidget(device_panel)
 
