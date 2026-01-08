@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.8] - 2026-01-08
+
+### Fixed
+- Flatpak build now works (updated KDE runtime to 6.9, added PySide6/PyYAML deps, included data directory)
+- OpenRazer bridge now properly detects zone-specific lighting on mice (logo, scroll wheel)
+- Lighting controls work on devices like Basilisk V2 that use zone-specific methods
+
 ## [1.3.0] - 2025-12-31
 
 ### Added
