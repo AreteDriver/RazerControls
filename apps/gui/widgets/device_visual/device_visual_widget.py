@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QPointF, QRectF, QSize, Qt, Signal
+from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import (
     QAction,
     QBrush,
@@ -59,6 +59,7 @@ class DeviceVisualWidget(QWidget):
     COLOR_BUTTON_OUTLINE = QColor(80, 80, 85)
     COLOR_BUTTON_HOVER = QColor(70, 70, 75)
     COLOR_BUTTON_SELECTED = QColor(0, 200, 100)
+    COLOR_BUTTON_PRESSED = QColor(255, 200, 0)  # Bright yellow flash for physical press
     COLOR_ZONE = QColor(0, 150, 80, 100)
     COLOR_ZONE_OUTLINE = QColor(0, 200, 100)
     COLOR_TEXT = QColor(180, 180, 180)
@@ -73,6 +74,8 @@ class DeviceVisualWidget(QWidget):
 
         self._hovered_button: str | None = None
         self._selected_button: str | None = None
+        self._pressed_buttons: set[str] = set()  # Buttons currently highlighted from physical press
+        self._press_timers: dict[str, QTimer] = {}  # Timers to auto-clear pressed state
         self._zone_colors: dict[str, QColor] = {}
         self._button_bindings: dict[str, str] = {}  # button_id -> key binding
 
@@ -176,6 +179,51 @@ class DeviceVisualWidget(QWidget):
         """Programmatically select a button."""
         self._selected_button = button_id
         self.update()
+
+    def highlight_button(self, button_id: str, duration_ms: int = 200) -> None:
+        """Highlight a button briefly to show physical press.
+
+        Args:
+            button_id: The button ID to highlight
+            duration_ms: How long to show the highlight (default 200ms)
+        """
+        # Add to pressed set
+        self._pressed_buttons.add(button_id)
+        self.update()
+
+        # Cancel existing timer for this button if any
+        if button_id in self._press_timers:
+            self._press_timers[button_id].stop()
+            self._press_timers[button_id].deleteLater()
+
+        # Create timer to clear the highlight
+        timer = QTimer(self)
+        timer.setSingleShot(True)
+        timer.timeout.connect(lambda: self._clear_highlight(button_id))
+        timer.start(duration_ms)
+        self._press_timers[button_id] = timer
+
+    def _clear_highlight(self, button_id: str) -> None:
+        """Clear the pressed highlight for a button."""
+        self._pressed_buttons.discard(button_id)
+        if button_id in self._press_timers:
+            del self._press_timers[button_id]
+        self.update()
+
+    def highlight_button_by_input_code(self, input_code: str, duration_ms: int = 200) -> None:
+        """Highlight a button by its input code (e.g., 'BTN_LEFT').
+
+        Args:
+            input_code: The evdev input code
+            duration_ms: How long to show the highlight
+        """
+        if not self._layout:
+            return
+
+        for button in self._layout.buttons:
+            if button.input_code == input_code:
+                self.highlight_button(button.id, duration_ms)
+                return
 
     def paintEvent(self, event: Any) -> None:
         """Render the device layout."""
@@ -282,6 +330,7 @@ class DeviceVisualWidget(QWidget):
         # Determine colors based on state
         is_hovered = button.id == self._hovered_button
         is_selected = button.id == self._selected_button
+        is_pressed = button.id in self._pressed_buttons
         has_image = self._device_image is not None
 
         if button.is_zone:
@@ -290,18 +339,26 @@ class DeviceVisualWidget(QWidget):
             outline_color = self.COLOR_BUTTON_SELECTED if is_selected else self.COLOR_ZONE_OUTLINE
             outline_width = 3 if is_selected else 1
         else:
-            # Physical button
-            if is_selected:
+            # Physical button - pressed state takes priority
+            if is_pressed:
+                fill_color = QColor(self.COLOR_BUTTON_PRESSED)
+                outline_color = self.COLOR_BUTTON_PRESSED
+                outline_width = 3
+            elif is_selected:
                 fill_color = QColor(self.COLOR_BUTTON_SELECTED)
+                outline_color = self.COLOR_BUTTON_SELECTED
+                outline_width = 2
             elif is_hovered:
                 fill_color = QColor(self.COLOR_BUTTON_HOVER)
+                outline_color = self.COLOR_BUTTON_OUTLINE
+                outline_width = 1
             else:
                 fill_color = QColor(self.COLOR_BUTTON)
-            outline_color = self.COLOR_BUTTON_SELECTED if is_selected else self.COLOR_BUTTON_OUTLINE
-            outline_width = 2 if is_selected else 1
+                outline_color = self.COLOR_BUTTON_OUTLINE
+                outline_width = 1
 
-            # Make buttons semi-transparent when image is present (except selected)
-            if has_image and not is_selected:
+            # Make buttons semi-transparent when image is present (except selected/pressed)
+            if has_image and not is_selected and not is_pressed:
                 if is_hovered:
                     fill_color.setAlpha(180)  # More visible on hover
                 else:

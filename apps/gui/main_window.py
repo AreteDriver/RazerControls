@@ -1,9 +1,10 @@
 """Main application window."""
 
 import subprocess
+import threading
 from pathlib import Path
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Signal, QObject
 from PySide6.QtWidgets import (
     QCheckBox,
     QGridLayout,
@@ -35,6 +36,55 @@ from .widgets.razer_controls import RazerControlsWidget
 from .widgets.zone_editor import ZoneEditorWidget
 
 
+class InputMonitor(QObject):
+    """Monitor input events from a device and emit button press signals."""
+
+    button_pressed = Signal(str)  # input_code (e.g., 'BTN_LEFT')
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._thread: threading.Thread | None = None
+        self._running = False
+        self._device_path: str | None = None
+
+    def start_monitoring(self, device_path: str) -> None:
+        """Start monitoring a device for input events."""
+        self.stop_monitoring()
+        self._device_path = device_path
+        self._running = True
+        self._thread = threading.Thread(target=self._monitor_loop, daemon=True)
+        self._thread.start()
+
+    def stop_monitoring(self) -> None:
+        """Stop monitoring."""
+        self._running = False
+        if self._thread:
+            self._thread.join(timeout=0.5)
+            self._thread = None
+
+    def _monitor_loop(self) -> None:
+        """Read events from device (runs in thread)."""
+        try:
+            import evdev
+            from evdev import ecodes
+
+            device = evdev.InputDevice(self._device_path)
+            # Don't grab - just read events passively
+            for event in device.read_loop():
+                if not self._running:
+                    break
+                # Only emit on key/button press (value=1)
+                if event.type == ecodes.EV_KEY and event.value == 1:
+                    code_name = ecodes.KEY.get(event.code) or ecodes.BTN.get(event.code)
+                    if code_name:
+                        # Handle tuple case (some codes have aliases)
+                        if isinstance(code_name, tuple):
+                            code_name = code_name[0]
+                        self.button_pressed.emit(code_name)
+        except Exception:
+            pass  # Device disconnected or inaccessible
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -62,6 +112,10 @@ class MainWindow(QMainWindow):
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self._refresh_device_status)
         self.refresh_timer.start(5000)  # Every 5 seconds
+
+        # Input monitor for button highlighting in Device View
+        self.input_monitor = InputMonitor(self)
+        self.input_monitor.button_pressed.connect(self._on_physical_button_pressed)
 
     def _setup_ui(self):
         """Set up the main UI."""
@@ -242,6 +296,11 @@ class MainWindow(QMainWindow):
         self.device_view_combo.setMinimumWidth(200)
         self.device_view_combo.currentIndexChanged.connect(self._on_device_view_changed)
         top_bar.addWidget(self.device_view_combo)
+
+        self.test_buttons_btn = QPushButton("Test Buttons")
+        self.test_buttons_btn.setMaximumWidth(100)
+        self.test_buttons_btn.clicked.connect(self._test_button_highlighting)
+        top_bar.addWidget(self.test_buttons_btn)
         top_bar.addStretch()
 
         layout.addLayout(top_bar)
@@ -264,10 +323,57 @@ class MainWindow(QMainWindow):
                 device.device_type,
                 device.matrix_cols if hasattr(device, "matrix_cols") else None,
             )
+            # Start monitoring input events for button highlighting
+            self._start_input_monitoring(device.name)
+
+    def _start_input_monitoring(self, device_name: str):
+        """Find and monitor the evdev input device for button highlighting."""
+        # Search device registry for matching device
+        self.device_registry.scan()
+        for dev_info in self.device_registry.devices:
+            # Match by name (partial match for Razer devices)
+            if "razer" in dev_info.name.lower() and any(
+                part.lower() in dev_info.name.lower() for part in device_name.split()
+            ):
+                self.input_monitor.start_monitoring(dev_info.event_path)
+                return
+        # Fallback: stop monitoring if no match
+        self.input_monitor.stop_monitoring()
+
+    def _test_button_highlighting(self):
+        """Test button highlighting by cycling through all buttons."""
+        layout = self.device_visual.get_layout()
+        if not layout:
+            self.statusbar.showMessage("No device layout loaded")
+            return
+
+        buttons = [b for b in layout.buttons if not b.is_zone]
+        if not buttons:
+            self.statusbar.showMessage("No buttons in layout")
+            return
+
+        self._test_index = 0
+        self._test_buttons = buttons
+
+        def highlight_next():
+            if self._test_index < len(self._test_buttons):
+                btn = self._test_buttons[self._test_index]
+                self.device_visual.highlight_button(btn.id, 250)
+                self.statusbar.showMessage(f"Testing: {btn.label}")
+                self._test_index += 1
+                QTimer.singleShot(300, highlight_next)
+            else:
+                self.statusbar.showMessage("Button test complete")
+
+        highlight_next()
 
     def _on_device_button_clicked(self, button_id: str, input_code: str):
         """Handle button click on device visual."""
         self.statusbar.showMessage(f"Button clicked: {button_id} ({input_code})")
+
+    def _on_physical_button_pressed(self, input_code: str):
+        """Handle physical button press - highlight in device view."""
+        self.device_visual.highlight_button_by_input_code(input_code)
 
     def _on_device_zone_clicked(self, zone_id: str):
         """Handle zone click on device visual - open color picker."""
@@ -633,4 +739,5 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Handle window close."""
         self.refresh_timer.stop()
+        self.input_monitor.stop_monitoring()
         event.accept()
