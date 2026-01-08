@@ -776,6 +776,9 @@ class TestCapabilityDetectionExceptions:
         """Test brightness detection handles exception (lines 170-171)."""
         mock_dev = MagicMock()
         mock_dev.getBrightness.side_effect = Exception("Not supported")
+        # Also mock fallback brightness methods
+        mock_dev.getLogoBrightness.side_effect = Exception("Not supported")
+        mock_dev.getScrollBrightness.side_effect = Exception("Not supported")
         mock_session_bus.get.return_value = mock_dev
 
         device = RazerDevice(
@@ -900,10 +903,11 @@ class TestCapabilityDetectionExceptions:
         assert device.firmware_version == ""
 
     def test_detect_caps_logo_exception(self, mock_session_bus):
-        """Test logo detection handles exception (lines 238-239)."""
+        """Test logo detection handles exception."""
         mock_dev = MagicMock()
         mock_dev.getBrightness.side_effect = Exception("Not supported")
-        mock_dev.getLogoActive.side_effect = Exception("Not supported")
+        mock_dev.getLogoBrightness.side_effect = Exception("Not supported")
+        mock_dev.getScrollBrightness.side_effect = Exception("Not supported")
         mock_session_bus.get.return_value = mock_dev
 
         device = RazerDevice(
@@ -918,10 +922,11 @@ class TestCapabilityDetectionExceptions:
         assert device.has_logo is False
 
     def test_detect_caps_scroll_exception(self, mock_session_bus):
-        """Test scroll detection handles exception (lines 244-245)."""
+        """Test scroll detection handles exception."""
         mock_dev = MagicMock()
         mock_dev.getBrightness.side_effect = Exception("Not supported")
-        mock_dev.getScrollActive.side_effect = Exception("Not supported")
+        mock_dev.getLogoBrightness.side_effect = Exception("Not supported")
+        mock_dev.getScrollBrightness.side_effect = Exception("Not supported")
         mock_session_bus.get.return_value = mock_dev
 
         device = RazerDevice(

@@ -162,13 +162,24 @@ class OpenRazerBridge:
 
     def _detect_capabilities(self, dbus_dev, device: RazerDevice) -> None:
         """Detect device capabilities via DBus introspection."""
-        # Check for brightness/lighting
+        # Check for brightness/lighting (try generic first, then zone-specific)
         try:
             device.brightness = dbus_dev.getBrightness()
             device.has_brightness = True
             device.has_lighting = True
         except Exception:
-            pass
+            # Try zone-specific brightness (mice often only have these)
+            try:
+                device.brightness = int(dbus_dev.getLogoBrightness())
+                device.has_brightness = True
+                device.has_lighting = True
+            except Exception:
+                try:
+                    device.brightness = int(dbus_dev.getScrollBrightness())
+                    device.has_brightness = True
+                    device.has_lighting = True
+                except Exception:
+                    pass
 
         # Check for DPI
         try:
@@ -212,7 +223,9 @@ class OpenRazerBridge:
 
         # Detect supported effects by introspecting available methods
         effects = []
+        # Check both generic and zone-specific effect methods
         effect_checks = [
+            # Generic effects
             ("setStatic", "static"),
             ("setSpectrum", "spectrum"),
             ("setBreathSingle", "breathing"),
@@ -223,23 +236,33 @@ class OpenRazerBridge:
             ("setStarlight", "starlight"),
             ("setRipple", "ripple"),
             ("setNone", "none"),
+            # Logo-specific effects (for mice)
+            ("setLogoStatic", "static"),
+            ("setLogoSpectrum", "spectrum"),
+            ("setLogoBreathSingle", "breathing"),
+            ("setLogoNone", "none"),
+            # Scroll-specific effects (for mice)
+            ("setScrollStatic", "static"),
+            ("setScrollSpectrum", "spectrum"),
+            ("setScrollBreathSingle", "breathing"),
+            ("setScrollNone", "none"),
         ]
 
         for method_name, effect_name in effect_checks:
-            if hasattr(dbus_dev, method_name):
+            if hasattr(dbus_dev, method_name) and effect_name not in effects:
                 effects.append(effect_name)
 
         device.supported_effects = effects
 
-        # Check for logo/scroll lighting
+        # Check for logo/scroll lighting (use getBrightness as capability check)
         try:
-            dbus_dev.getLogoActive()
+            dbus_dev.getLogoBrightness()
             device.has_logo = True
         except Exception:
             pass
 
         try:
-            dbus_dev.getScrollActive()
+            dbus_dev.getScrollBrightness()
             device.has_scroll = True
         except Exception:
             pass
@@ -270,7 +293,26 @@ class OpenRazerBridge:
 
         try:
             dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
-            dev.setBrightness(brightness)
+            # Try generic first, then zone-specific
+            try:
+                dev.setBrightness(brightness)
+            except Exception:
+                # Fall back to zone-specific brightness
+                success = False
+                if device.has_logo:
+                    try:
+                        dev.setLogoBrightness(brightness)
+                        success = True
+                    except Exception:
+                        pass
+                if device.has_scroll:
+                    try:
+                        dev.setScrollBrightness(brightness)
+                        success = True
+                    except Exception:
+                        pass
+                if not success:
+                    raise Exception("No brightness method available")
             device.brightness = brightness
             return True
         except Exception as e:
@@ -285,7 +327,26 @@ class OpenRazerBridge:
 
         try:
             dev = self._bus.get(self.DBUS_INTERFACE, device.object_path)
-            dev.setStatic(r, g, b)
+            # Try generic first, then zone-specific
+            try:
+                dev.setStatic(r, g, b)
+            except Exception:
+                # Fall back to zone-specific static color
+                success = False
+                if device.has_logo:
+                    try:
+                        dev.setLogoStatic(r, g, b)
+                        success = True
+                    except Exception:
+                        pass
+                if device.has_scroll:
+                    try:
+                        dev.setScrollStatic(r, g, b)
+                        success = True
+                    except Exception:
+                        pass
+                if not success:
+                    raise Exception("No static color method available")
             return True
         except Exception as e:
             print(f"Error setting color: {e}")
