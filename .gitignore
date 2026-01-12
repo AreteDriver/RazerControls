@@ -16,6 +16,7 @@ parts/
 sdist/
 var/
 wheels/
+!packaging/flatpak/wheels/
 *.egg-info/
 .installed.cfg
 *.egg

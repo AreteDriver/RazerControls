@@ -65,36 +65,67 @@
   <screenshots>
     <screenshot type="default">
       <caption>Main window with profile and binding configuration</caption>
-      <image>https://raw.githubusercontent.com/AreteDriver/Razer_Controls/main/screenshots/main-window.png</image>
+      <image>https://raw.githubusercontent.com/AreteDriver/Razer_Controls/main/docs/screenshots/main-window.png</image>
     </screenshot>
   </screenshots>
 
   <releases>
-    <release version="1.4.4" date="2026-01-01">
+    <release version="1.9.8" date="2026-01-11">
       <description>
-        <p>Global hotkeys for profile switching</p>
         <ul>
-          <li>Ctrl+Shift+1-9 to switch profiles by position</li>
-          <li>Hotkey hints displayed in tray menu</li>
+          <li>SVG icon system with tab and action icons</li>
+          <li>Button highlighting for physical press feedback</li>
+          <li>OpenRazer bridge zone-specific lighting fixes</li>
+          <li>Flatpak build improvements</li>
         </ul>
       </description>
     </release>
-    <release version="1.4.3" date="2026-01-01">
+    <release version="1.9.5" date="2026-01-04">
       <description>
-        <p>First-run wizard and profile export/import</p>
         <ul>
-          <li>4-step setup wizard for new users</li>
-          <li>Profile export/import in tray and CLI</li>
-          <li>Help menu with About dialog</li>
+          <li>Single-instance enforcement for GUI and tray</li>
+          <li>Code quality improvements and deprecation fixes</li>
         </ul>
       </description>
     </release>
-    <release version="1.4.2" date="2026-01-01">
+    <release version="1.9.0" date="2026-01-03">
       <description>
-        <p>Tray improvements</p>
         <ul>
-          <li>Autostart toggle in tray menu</li>
-          <li>Desktop entries for application menu</li>
+          <li>Device visual integration in binding editor</li>
+          <li>Interactive button mapping on device images</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.8.0" date="2026-01-02">
+      <description>
+        <ul>
+          <li>Visual device layout system with interactive buttons</li>
+          <li>Click-to-bind on device images</li>
+          <li>Improved test coverage (99%, 1539 tests)</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.7.0" date="2025-12-31">
+      <description>
+        <ul>
+          <li>Zone-based RGB editor widget</li>
+          <li>Per-key RGB matrix lighting support</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.6.0" date="2025-12-30">
+      <description>
+        <ul>
+          <li>Profile import/export with YAML support</li>
+          <li>Improved PyGObject integration</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.5.0" date="2025-12-29">
+      <description>
+        <ul>
+          <li>Hotkey backend status in tray menu</li>
+          <li>Auto-reload hotkeys when settings change</li>
         </ul>
       </description>
     </release>
