@@ -1303,6 +1303,7 @@ class TestMainFunction:
 class TestMainGuard:
     """Tests for if __name__ == '__main__' guard."""
 
+    @pytest.mark.filterwarnings("ignore:.*found in sys.modules.*:RuntimeWarning")
     @patch("services.remap_daemon.daemon.RemapDaemon")
     @patch("services.remap_daemon.daemon.logging")
     @patch("sys.argv", ["remap-daemon", "--list-devices"])

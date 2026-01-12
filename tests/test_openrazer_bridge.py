@@ -1722,6 +1722,7 @@ class TestMainFunction:
 class TestMainGuard:
     """Tests for __name__ == '__main__' guard."""
 
+    @pytest.mark.filterwarnings("ignore:.*found in sys.modules.*:RuntimeWarning")
     def test_main_guard_via_runpy(self, mock_session_bus):
         """Test __name__ == '__main__' guard (line 723) via runpy."""
         import runpy

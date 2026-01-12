@@ -422,10 +422,11 @@ class TestHotkeyCapture:
         binding = HotkeyBinding(key="f1", modifiers=["ctrl"])
         widget = HotkeyCapture(binding)
 
-        # Create a real mouse event
+        # Create a real mouse event (globalPos required in Qt6)
         event = QMouseEvent(
             QMouseEvent.Type.MouseButtonPress,
             QPointF(5, 5),
+            QPointF(5, 5),  # globalPos
             Qt.MouseButton.LeftButton,
             Qt.MouseButton.LeftButton,
             Qt.KeyboardModifier.NoModifier,
