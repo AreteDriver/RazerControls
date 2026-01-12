@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ActionType(str, Enum):
@@ -62,6 +62,23 @@ class Binding(BaseModel):
     action_type: ActionType = ActionType.KEY
     output_keys: list[str] = Field(default_factory=list, description="Keys to output")
     macro_id: str | None = Field(None, description="Reference to macro if action_type=macro")
+
+    @model_validator(mode="after")
+    def validate_action_requirements(self) -> "Binding":
+        """Validate that action_type has required fields populated."""
+        if self.action_type in (ActionType.KEY, ActionType.CHORD):
+            if not self.output_keys:
+                raise ValueError(
+                    f"action_type '{self.action_type.value}' requires non-empty output_keys "
+                    f"for input '{self.input_code}'. Use 'passthrough' to forward the original "
+                    f"key, or 'disabled' to block it."
+                )
+        elif self.action_type == ActionType.MACRO:
+            if not self.macro_id:
+                raise ValueError(
+                    f"action_type 'macro' requires macro_id for input '{self.input_code}'"
+                )
+        return self
 
 
 class Layer(BaseModel):

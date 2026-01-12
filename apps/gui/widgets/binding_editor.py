@@ -690,11 +690,11 @@ class BindingEditorWidget(QWidget):
         if not layer:
             return
 
-        # Create a binding with just the input code
+        # Create a binding with just the input code (use PASSTHROUGH as default
+        # since KEY requires output_keys to be set)
         prefilled_binding = Binding(
             input_code=input_code,
-            action_type=ActionType.KEY,
-            output_keys=[],
+            action_type=ActionType.PASSTHROUGH,
         )
 
         macros = self.current_profile.macros if self.current_profile else []
