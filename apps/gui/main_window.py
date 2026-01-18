@@ -82,8 +82,8 @@ class InputMonitor(QObject):
                         if isinstance(code_name, tuple):
                             code_name = code_name[0]
                         self.button_pressed.emit(code_name)
-        except Exception:
-            pass  # Device disconnected or inaccessible
+        except (OSError, ImportError, AttributeError):
+            pass  # Device disconnected, inaccessible, or evdev not available
 
 
 class MainWindow(QMainWindow):
@@ -670,7 +670,7 @@ class MainWindow(QMainWindow):
             else:
                 self.daemon_status_label.setText("Stopped")
                 self.daemon_status_label.setStyleSheet("color: #888888;")
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             self.daemon_status_label.setText("Unknown")
             self.daemon_status_label.setStyleSheet("color: #888888;")
 

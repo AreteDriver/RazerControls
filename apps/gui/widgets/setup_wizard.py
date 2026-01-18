@@ -291,7 +291,7 @@ class SetupWizard(QDialog):
             result = subprocess.run(["groups"], capture_output=True, text=True, timeout=2)
             if "input" not in result.stdout:
                 issues.append("- User not in 'input' group. Run: sudo usermod -aG input $USER")
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             pass
 
         # Check OpenRazer
@@ -306,7 +306,7 @@ class SetupWizard(QDialog):
                 issues.append(
                     "- OpenRazer daemon not running. Run: sudo systemctl start openrazer-daemon"
                 )
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             issues.append("- Could not check OpenRazer daemon status")
 
         if not issues:
@@ -453,7 +453,7 @@ class SetupWizard(QDialog):
                     check=False,
                     timeout=5,
                 )
-            except Exception:
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
                 pass
 
         if self.start_now_check.isChecked():
@@ -463,7 +463,7 @@ class SetupWizard(QDialog):
                     check=False,
                     timeout=5,
                 )
-            except Exception:
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
                 pass
 
         self.accept()

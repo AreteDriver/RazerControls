@@ -52,7 +52,7 @@ class X11Backend(WindowBackend):
         try:
             result = subprocess.run(["which", "xdotool"], capture_output=True, timeout=2)
             return result.returncode == 0
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             return False
 
     def get_active_window(self) -> ActiveWindowInfo | None:
@@ -87,7 +87,7 @@ class X11Backend(WindowBackend):
                     comm_path = Path(f"/proc/{pid}/comm")
                     if comm_path.exists():
                         process_name = comm_path.read_text().strip()
-                except Exception:
+                except OSError:
                     pass
 
                 # Try exe symlink as fallback
@@ -95,7 +95,7 @@ class X11Backend(WindowBackend):
                     try:
                         exe_path = Path(f"/proc/{pid}/exe").resolve()
                         process_name = exe_path.name
-                    except Exception:
+                    except OSError:
                         pass
 
             # Get window class
@@ -126,7 +126,7 @@ class X11Backend(WindowBackend):
 
         except subprocess.TimeoutExpired:
             return None
-        except Exception:
+        except (FileNotFoundError, OSError, ValueError):
             return None
 
 
@@ -194,12 +194,12 @@ class GnomeWaylandBackend(WindowBackend):
                 comm_path = Path(f"/proc/{pid}/comm")
                 if comm_path.exists():
                     process_name = comm_path.read_text().strip()
-            except Exception:
+            except OSError:
                 pass
 
             return ActiveWindowInfo(pid=pid, process_name=process_name)
 
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError, ValueError):
             return None
 
 

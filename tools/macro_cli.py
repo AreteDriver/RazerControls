@@ -42,7 +42,7 @@ def find_keyboard_device() -> str | None:
                 # Keyboards have letter keys
                 if ecodes.KEY_A in keys and ecodes.KEY_Z in keys:
                     return path
-        except Exception:
+        except OSError:
             continue
     return None
 
@@ -122,7 +122,7 @@ def cmd_record(args) -> int:
     finally:
         try:
             dev.ungrab()
-        except Exception:
+        except (OSError, AttributeError):
             pass
 
     if recorder.is_recording():

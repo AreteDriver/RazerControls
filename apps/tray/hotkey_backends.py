@@ -262,7 +262,7 @@ class PortalGlobalShortcuts(HotkeyBackend):
                         -1,
                         None,
                     )
-                except Exception:
+                except (OSError, AttributeError):
                     pass  # Session may already be closed
 
             self._session_handle = None

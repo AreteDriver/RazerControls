@@ -187,7 +187,7 @@ class RecordingDialog(QDialog):
                     if ecodes.EV_KEY in caps:
                         name = dev.name or "Unknown"
                         self.device_combo.addItem(f"{name} ({path})", path)
-                except Exception:
+                except OSError:
                     continue
 
         except ImportError:

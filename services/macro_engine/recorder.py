@@ -281,7 +281,7 @@ class DeviceMacroRecorder(MacroRecorder):
             if self._device:
                 try:
                     self._device.ungrab()
-                except Exception:
+                except (OSError, AttributeError):
                     pass
                 self._device = None
 

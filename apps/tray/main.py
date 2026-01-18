@@ -381,7 +381,7 @@ class RazerTray(QSystemTrayIcon):
                 timeout=2,
             )
             running = result.stdout.strip() == "active"
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             running = False
 
         if running != self._daemon_running:
@@ -678,7 +678,7 @@ class RazerTray(QSystemTrayIcon):
                 timeout=2,
             )
             status = result.stdout.strip()
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             status = "unknown"
 
         if status == "active":
