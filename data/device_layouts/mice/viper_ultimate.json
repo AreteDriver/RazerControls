@@ -6,7 +6,11 @@
     ".*viper.*ultimate.*",
     ".*Viper Ultimate.*",
     ".*viper.*v2.*",
-    ".*Viper V2.*"
+    ".*Viper V2.*",
+    ".*Viper.*Mini.*",
+    ".*Viper.*8K.*",
+    ".*Viper.*8KHz.*",
+    ".*viper.*mini.*signature.*"
   ],
   "base_width": 200,
   "base_height": 380,

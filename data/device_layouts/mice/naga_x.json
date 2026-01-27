@@ -6,7 +6,13 @@
     ".*naga.*x.*",
     ".*Naga X.*",
     ".*naga.*trinity.*",
-    ".*naga.*pro.*"
+    ".*naga.*pro.*",
+    ".*Naga.*Trinity.*",
+    ".*Naga.*Pro.*",
+    ".*Naga.*V2.*",
+    ".*Naga.*Left.*Handed.*",
+    ".*naga.*left.*hand.*",
+    ".*naga.*epic.*chroma.*"
   ],
   "base_width": 240,
   "base_height": 420,

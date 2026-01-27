@@ -6,7 +6,11 @@
     ".*mamba.*elite.*",
     ".*Mamba Elite.*",
     ".*mamba.*wireless.*",
-    ".*Mamba Wireless.*"
+    ".*Mamba Wireless.*",
+    ".*Mamba.*HyperFlux.*",
+    ".*Mamba.*Tournament.*",
+    ".*Mamba.*Chroma.*",
+    ".*mamba.*te.*"
   ],
   "base_width": 200,
   "base_height": 400,

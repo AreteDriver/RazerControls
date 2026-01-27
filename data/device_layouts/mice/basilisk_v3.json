@@ -5,7 +5,11 @@
   "device_name_patterns": [
     ".*basilisk.*v[23].*",
     ".*Basilisk V[23].*",
-    ".*Basilisk_V[23].*"
+    ".*Basilisk_V[23].*",
+    ".*Basilisk.*Pro.*",
+    ".*Basilisk.*Ultimate.*",
+    ".*Basilisk.*X.*HyperSpeed.*",
+    ".*basilisk.*hyperspeed.*"
   ],
   "base_width": 220,
   "base_height": 420,

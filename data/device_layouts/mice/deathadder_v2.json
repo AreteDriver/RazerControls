@@ -4,7 +4,12 @@
   "category": "mouse",
   "device_name_patterns": [
     ".*deathadder.*v2.*",
-    ".*DeathAdder V2.*"
+    ".*DeathAdder V2.*",
+    ".*DeathAdder.*V2.*Pro.*",
+    ".*DeathAdder.*V2.*Mini.*",
+    ".*DeathAdder.*V2.*Lite.*",
+    ".*DeathAdder.*V2.*X.*",
+    ".*deathadder.*essential.*"
   ],
   "base_width": 200,
   "base_height": 400,

@@ -5,7 +5,14 @@
   "device_name_patterns": [
     ".*blackwidow.*v3.*",
     ".*BlackWidow V3.*",
-    ".*blackwidow.*elite.*"
+    ".*blackwidow.*elite.*",
+    ".*BlackWidow.*V3.*Pro.*",
+    ".*BlackWidow.*V3.*Mini.*",
+    ".*BlackWidow.*V3.*TKL.*",
+    ".*BlackWidow.*V4.*",
+    ".*BlackWidow.*Lite.*",
+    ".*BlackWidow.*Chroma.*V2.*",
+    ".*blackwidow.*tournament.*"
   ],
   "base_width": 900,
   "base_height": 320,

@@ -6,7 +6,13 @@
     ".*huntsman.*elite.*",
     ".*Huntsman Elite.*",
     ".*huntsman.*v2.*",
-    ".*Huntsman V2.*"
+    ".*Huntsman V2.*",
+    ".*Huntsman.*V2.*Analog.*",
+    ".*Huntsman.*V2.*TKL.*",
+    ".*Huntsman.*V3.*",
+    ".*Huntsman.*Mini.*",
+    ".*Huntsman.*Tournament.*",
+    ".*huntsman.*te.*"
   ],
   "base_width": 900,
   "base_height": 400,

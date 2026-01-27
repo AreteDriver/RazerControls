@@ -4,7 +4,9 @@
   "category": "keypad",
   "device_name_patterns": [
     ".*orbweaver.*",
-    ".*Orbweaver.*"
+    ".*Orbweaver.*",
+    ".*Orbweaver.*Chroma.*",
+    ".*Orbweaver.*Stealth.*"
   ],
   "base_width": 420,
   "base_height": 370,

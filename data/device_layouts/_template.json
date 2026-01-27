@@ -1,0 +1,72 @@
+{
+  "_comment": "TEMPLATE: Copy this file and rename to {device_name}.json in the appropriate category folder",
+  "id": "razer_device_name",
+  "name": "Razer Device Name",
+  "category": "mouse",
+  "device_name_patterns": [
+    ".*device.*name.*",
+    ".*Device Name.*",
+    ".*DeviceName.*"
+  ],
+  "base_width": 200,
+  "base_height": 400,
+  "image_path": "device_images/mice/device_name.svg",
+  "outline_path": [
+    [0.5, 0.0],
+    [0.8, 0.1],
+    [0.95, 0.25],
+    [1.0, 0.45],
+    [0.95, 0.7],
+    [0.8, 0.9],
+    [0.5, 1.0],
+    [0.2, 0.9],
+    [0.05, 0.7],
+    [0.0, 0.45],
+    [0.05, 0.25],
+    [0.2, 0.1]
+  ],
+  "buttons": [
+    {
+      "_comment": "Physical button - use input_code for evdev mapping",
+      "id": "left_click",
+      "label": "Left",
+      "x": 0.1,
+      "y": 0.05,
+      "width": 0.35,
+      "height": 0.30,
+      "shape_type": "rect",
+      "input_code": "BTN_LEFT"
+    },
+    {
+      "id": "right_click",
+      "label": "Right",
+      "x": 0.55,
+      "y": 0.05,
+      "width": 0.35,
+      "height": 0.30,
+      "shape_type": "rect",
+      "input_code": "BTN_RIGHT"
+    },
+    {
+      "id": "scroll_wheel",
+      "label": "Scroll",
+      "x": 0.40,
+      "y": 0.15,
+      "width": 0.20,
+      "height": 0.12,
+      "shape_type": "ellipse",
+      "input_code": "BTN_MIDDLE"
+    },
+    {
+      "_comment": "RGB zone - use is_zone: true, no input_code",
+      "id": "logo_zone",
+      "label": "Logo",
+      "x": 0.35,
+      "y": 0.60,
+      "width": 0.30,
+      "height": 0.10,
+      "shape_type": "ellipse",
+      "is_zone": true
+    }
+  ]
+}
